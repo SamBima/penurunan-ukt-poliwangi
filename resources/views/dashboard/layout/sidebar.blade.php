@@ -41,26 +41,20 @@
     @endif
 
     @if (Auth::user()->role == 'admin' || Auth::user()->role == 'keuangan' || Auth::user()->role == 'wadir')
-        <li class="nav-item {{ request()->is('list-pengajuan') || request()->is('list-pengajuan/*') ? 'active' : '' }}">
+        <li class="nav-item {{ (request()->is('list-pengajuan') || (request()->is('list-pengajuan/*') && request('source') != 'arsip')) ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('list-pengajuan') }}">
-                <i class="fas fa-fw fa-chart-area"></i>
+                <i class="fas fa-fw fa-file-alt"></i>
                 <span>List Pengajuan</span></a>
+        </li>
+        <li class="nav-item {{ (request()->is('arsip-pengajuan') || (request()->is('list-pengajuan/*') && request('source') == 'arsip')) ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('arsip-pengajuan') }}">
+                <i class="fas fa-fw fa-archive"></i>
+                <span>Arsip</span></a>
         </li>
     @endif
 
     <!-- Divider -->
     <hr class="sidebar-divider">
-
-    <!-- Heading -->
-    <div class="sidebar-heading">
-        Pengaturan
-    </div>
-
-    <li class="nav-item {{ request()->is('profile') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('profile') }}">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Profile</span></a>
-    </li>
 
     <!-- Sidebar Message -->
     {{-- <div class="sidebar-card d-none d-lg-flex">

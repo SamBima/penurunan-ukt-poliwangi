@@ -8,8 +8,22 @@ use App\Models\SkPenurunanUkt;
 use App\Models\HasilValidasi;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Prodi;
+use App\Models\Mahasiswa;
+
 class DashboardController extends Controller
 {
+    public function profile()
+    {
+        if (Auth::user()->role == 'mahasiswa') {
+            $prodi = Prodi::with('jurusan')->get();
+            $mahasiswa = Mahasiswa::where('user_id', Auth::user()->id)->first();
+            return view('dashboard.profile_mahasiswa', compact('prodi', 'mahasiswa'));
+        }
+
+        return view('dashboard.profile');
+    }
+
     public function index()
     {
         $user = Auth::user();

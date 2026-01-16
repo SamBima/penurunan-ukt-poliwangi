@@ -2,7 +2,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">List Daftar Pemohon Penurunan UKT Terbaru</h1>
+        <h1 class="h3 mb-0 text-gray-800">{{ isset($isArsip) && $isArsip ? 'Arsip Pengajuan Penurunan UKT' : 'List Daftar Pemohon Penurunan UKT Terbaru' }}</h1>
     </div>
 
     <div class="card shadow mb-4">
@@ -10,7 +10,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Filter & Pencarian</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('list-pengajuan') }}">
+            <form method="GET" action="{{ isset($isArsip) && $isArsip ? route('arsip-pengajuan') : route('list-pengajuan') }}">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -123,20 +123,38 @@
                             <td>
                                 @php
                                     $badgeClass = '';
+                                    $statusLabel = ucwords(str_replace('_', ' ', $item->status));
+
                                     switch($item->status) {
                                         case 'diajukan':
                                             $badgeClass = 'badge-warning';
+                                            $statusLabel = 'Diajukan Ke Keuangan';
                                             break;
                                         case 'diterima_keuangan':
                                             $badgeClass = 'badge-primary';
                                             break;
                                         case 'dinilai_admin':
                                         case 'dinilai_keuangan':
-                                        case 'dinilai_wadir':
                                             $badgeClass = 'badge-info';
                                             break;
-                                        case 'disarankan_cicilan':
-                                            $badgeClass = 'badge-primary';
+                                        case 'dinilai_wadir': // Handle Wadir decision
+                                            $hasilWadir = $item->hasilValidasi->where('validator.role', 'wadir')->first();
+                                            if ($hasilWadir) {
+                                                if ($hasilWadir->status === 'disetujui') {
+                                                    $badgeClass = 'badge-success';
+                                                    $statusLabel = 'Disetujui';
+                                                } else {
+                                                    $badgeClass = 'badge-warning';
+                                                    $statusLabel = 'Disarankan Cicilan';
+                                                }
+                                            } else {
+                                                $badgeClass = 'badge-success';
+                                                $statusLabel = 'Selesai';
+                                            }
+                                            break;
+                                        case 'disarankan_cicilan': // Fallback if status updated
+                                            $badgeClass = 'badge-warning';
+                                            $statusLabel = 'Disarankan Cicilan';
                                             break;
                                         case 'disetujui':
                                             $badgeClass = 'badge-success';
@@ -148,7 +166,7 @@
                                             $badgeClass = 'badge-secondary';
                                     }
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">{{ $item->status_label }}</span>
+                                <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
                             </td>
                             <td>
                                 @if(Auth::user()->role === 'keuangan' && $item->status === 'diajukan')
@@ -165,17 +183,15 @@
                                                 <i class="fas fa-times"></i> Tolak
                                             </button>
                                         </form>
-                                        <form action="{{ route('list-pengajuan.show', $item->kode) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-primary ml-1" onclick="return confirm('Yakin ingin menolak pengajuan ini?')">
-                                                <i class="fas fa-eye"></i> Lihat Form & Berkas
-                                            </button>
-                                        </form>
-                                        
+                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : 'list']) }}" 
+                                            class="btn btn-sm btn-outline-primary ml-1" 
+                                            title="Lihat Detail">
+                                             <i class="fas fa-eye"></i> Lihat Form & Berkas
+                                         </a>
                                     </div>
                                 @elseif($item->status !== 'diajukan' || Auth::user()->role !== 'keuangan')
                                     <div class="btn-group mb-2" role="group">
-                                        <a href="{{ route('list-pengajuan.show', $item->kode) }}"
+                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : 'list']) }}"
                                            class="btn btn-sm btn-outline-primary"
                                            title="Lihat Detail">
                                             <i class="fas fa-eye"></i> Lihat Form & Berkas

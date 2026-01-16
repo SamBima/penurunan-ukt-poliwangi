@@ -35,15 +35,7 @@ Route::middleware(['guest'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/profile', function () {
-        if (Auth::user()->role == 'mahasiswa') {
-            $prodi = Prodi::with('jurusan')->get();
-            $mahasiswa = Mahasiswa::where('user_id', Auth::user()->id)->first();
-            return view('dashboard.profile_mahasiswa', compact('prodi', 'mahasiswa'));
-        }
-
-        return view('dashboard.profile');
-    })->name('profile');
+    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::post('/profile-mahasiswa', [AuthController::class, 'profileMahasiswa'])->name('profile-mahasiswa');
     Route::post('/password/update', [AuthController::class, 'updatePassword'])->name('password.update');
 
@@ -69,105 +61,12 @@ Route::middleware(['auth'])->group(function () {
             })->name('pengajuan');
             Route::post('/pengajuan', [PengajuanController::class, 'pengajuan']);
 
-            Route::get('/riwayat-pengajuan', function (Request $request) {
-                $query = PengajuanPenurunanUkt::with([
-                    'mahasiswa',
-                    'dokumenPendukung'
-                ])
-                ->withCount('dokumenPendukung')
-                ->where('mahasiswa_id', Mahasiswa::where('user_id', Auth::id())->first()->id)
-                ->orderBy('created_at', 'desc');
-
-                if ($request->filled('status')) {
-                    $query->where('status', $request->status);
-                }
-
-                if ($request->filled('search')) {
-                    $query->where('kode', 'like', '%' . $request->search . '%');
-                }
-
-                $pengajuans = $query->paginate(5)->appends($request->query());
-
-                return view('dashboard.riwayat_pengajuan', compact('pengajuans'));
-            })->name('riwayat-pengajuan');
+            Route::get('/riwayat-pengajuan', [PengajuanController::class, 'riwayat'])->name('riwayat-pengajuan');
         });
 
         Route::middleware(['checkRole:admin,keuangan,wadir'])->group(function () {
 
-            Route::get('/list-pengajuan', function (Request $request) {
-                $user = Auth::user();
-                $role = $user->role;
-                
-                $query = PengajuanPenurunanUkt::with(['mahasiswa']);
-
-                $allowedStatuses = [];
-                if ($role === 'keuangan') {
-                    $allowedStatuses = ['diajukan', 'dinilai_admin'];
-                } elseif ($role === 'admin') {
-                    $allowedStatuses = ['diterima_keuangan'];
-                } elseif ($role === 'wadir') 
-                    $allowedStatuses = ['dinilai_keuangan'];
-                }
-
-                if (!empty($allowedStatuses)) {
-                    if ($request->filled('status') && in_array($request->status, $allowedStatuses)) {
-                        $query->where('status', $request->status);
-                    } else {
-                        $query->whereIn('status', $allowedStatuses);
-                    }
-                }
-
-                if ($request->filled('search')) {
-                    $query->search($request->search);
-                }
-
-                if ($request->filled('semester')) {
-                    [$semester, $tahun] = explode('_', $request->semester);
-
-                    $query->where(function ($q) use ($semester, $tahun) {
-                        if ($semester === 'ganjil') {
-                            $q->whereYear('created_at', $tahun)
-                            ->whereBetween(DB::raw('MONTH(created_at)'), [7, 12]);
-                        } elseif ($semester === 'genap') {
-                            $q->whereYear('created_at', $tahun)
-                            ->whereBetween(DB::raw('MONTH(created_at)'), [1, 6]);
-                        }
-                    });
-                }
-
-                $query->orderBy('created_at', 'desc');
-                $pengajuan = $query->paginate(10);
-                $pengajuan->appends($request->query());
-
-                $firstPengajuan = PengajuanPenurunanUkt::orderBy('created_at', 'asc')->first();
-                $startYear = $firstPengajuan ? $firstPengajuan->created_at->year : now()->year;
-
-                $semesterOptions = [];
-                $currentYear = now()->year + 1;
-
-                for ($year = $startYear; $year <= $currentYear; $year++) {
-                    $semesterOptions["ganjil_{$year}"] = "Ganjil {$year}/" . ($year + 1);
-
-                    $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
-                }
-
-                $statusOptions = [];
-                $statusLabels = [
-                    'diajukan' => 'Diajukan',
-                    'diterima_keuangan' => 'Diterima Keuangan',
-                    'dinilai_admin' => 'Dinilai Kajur',
-                    'dinilai_keuangan' => 'Dinilai Keuangan',
-                    'dinilai_wadir' => 'Dinilai Wadir',
-                ];
-
-                foreach ($allowedStatuses as $status) {
-                    if (isset($statusLabels[$status])) {
-                        $statusOptions[$status] = $statusLabels[$status];
-                    }
-                }
-
-                return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions'));
-            })->name('list-pengajuan');
+            Route::get('/list-pengajuan', [PengajuanController::class, 'index'])->name('list-pengajuan');
 
             Route::post('/list-pengajuan/{kode}/approve', [PengajuanController::class, 'approvePengajuan'])
                 ->name('list-pengajuan.approve')
@@ -184,6 +83,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/list-pengajuan/{kode}', [PengajuanController::class, 'show'])
                 ->name('list-pengajuan.show')
                 ->middleware(['auth', 'checkRole:admin,keuangan,wadir']);
+
+            Route::get('/arsip-pengajuan', [PengajuanController::class, 'arsip'])->name('arsip-pengajuan');
         });
     });
 });

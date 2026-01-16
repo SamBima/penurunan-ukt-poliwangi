@@ -540,6 +540,11 @@ class PengajuanController extends Controller
                 ->first();
         }
 
+        // Jika status sudah final (Arsip), tampilkan view arsip readonly
+        if (in_array($pengajuan->status, ['dinilai_wadir', 'ditolak'])) {
+            return view('dashboard.detail_arsip', compact('pengajuan'));
+        }
+
         if ($role === 'admin') {
             return view('dashboard.detail_list_pengajuan_admin', compact('pengajuan', 'existingPoint'));
         } elseif ($role === 'keuangan') {
@@ -549,5 +554,162 @@ class PengajuanController extends Controller
         } else {
             return view('dashboard.detail_list_pengajuan_admin', compact('pengajuan', 'existingPoint'));
         }
+    }
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role;
+        
+        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+
+        // Tentukan status yang bisa dilihat berdasarkan role
+        $allowedStatuses = [];
+        if ($role === 'keuangan') {
+            $allowedStatuses = ['diajukan', 'dinilai_admin'];
+        } elseif ($role === 'admin') {
+            $allowedStatuses = ['diterima_keuangan'];
+        } elseif ($role === 'wadir') {
+            $allowedStatuses = ['dinilai_keuangan'];
+        }
+
+        // Filter berdasarkan role - hanya tampilkan yang perlu ditindaklanjuti
+        if (!empty($allowedStatuses)) {
+            if ($request->filled('status') && in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            } else {
+                $query->whereIn('status', $allowedStatuses);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                 $q->where('kode', 'like', "%{$search}%")
+                   ->orWhereHas('mahasiswa', function($m) use ($search) {
+                       $m->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nim', 'like', "%{$search}%");
+                   });
+            });
+        }
+
+        if ($request->filled('semester')) {
+            [$semester, $tahun] = explode('_', $request->semester);
+
+            $query->where(function ($q) use ($semester, $tahun) {
+                if ($semester === 'ganjil') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [7, 12]);
+                } elseif ($semester === 'genap') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [1, 6]);
+                }
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+        $pengajuan = $query->paginate(10);
+        $pengajuan->appends($request->query());
+
+        $firstPengajuan = PengajuanPenurunanUkt::orderBy('created_at', 'asc')->first();
+        $startYear = $firstPengajuan ? $firstPengajuan->created_at->year : now()->year;
+
+        $semesterOptions = [];
+        $currentYear = now()->year + 1;
+
+        for ($year = $startYear; $year <= $currentYear; $year++) {
+            $semesterOptions["ganjil_{$year}"] = "Ganjil {$year}/" . ($year + 1);
+            $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
+        }
+
+        // Buat status options berdasarkan role
+        $statusOptions = [];
+        $statusLabels = [
+            'diajukan' => 'Diajukan',
+            'diterima_keuangan' => 'Diterima Keuangan',
+            'dinilai_admin' => 'Dinilai Kajur',
+            'dinilai_keuangan' => 'Dinilai Keuangan',
+            'dinilai_wadir' => 'Dinilai Wadir',
+        ];
+
+        foreach ($allowedStatuses as $status) {
+            if (isset($statusLabels[$status])) {
+                $statusOptions[$status] = $statusLabels[$status];
+            }
+        }
+
+        return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions'));
+    }
+
+    public function arsip(Request $request)
+    {
+        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+
+        // Status Arsip = Selesai (dinilai_wadir menandakan selesai oleh Wadir)
+        $arsipStatuses = ['dinilai_wadir', 'ditolak'];
+        
+        if ($request->filled('status') && in_array($request->status, $arsipStatuses)) {
+             $query->where('status', $request->status);
+        } else {
+             $query->whereIn('status', $arsipStatuses);
+        }
+
+        // Filter Pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                 $q->where('kode', 'like', "%{$search}%")
+                   ->orWhereHas('mahasiswa', function($m) use ($search) {
+                       $m->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nim', 'like', "%{$search}%");
+                   });
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+        $pengajuan = $query->paginate(10);
+        $pengajuan->appends($request->query());
+
+        $firstPengajuan = PengajuanPenurunanUkt::orderBy('created_at', 'asc')->first();
+        $startYear = $firstPengajuan ? $firstPengajuan->created_at->year : now()->year;
+
+        $semesterOptions = [];
+        $currentYear = now()->year + 1;
+        for ($year = $startYear; $year <= $currentYear; $year++) {
+            $semesterOptions["ganjil_{$year}"] = "Ganjil {$year}/" . ($year + 1);
+            $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
+        }
+
+        $statusOptions = [
+            'dinilai_wadir' => 'Selesai (Keputusan Wadir)',
+            'ditolak' => 'Ditolak'
+        ];
+        
+        $isArsip = true;
+
+        return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions', 'isArsip'));
+    }
+
+    public function riwayat(Request $request)
+    {
+        $query = PengajuanPenurunanUkt::with([
+            'mahasiswa',
+            'dokumenPendukung'
+        ])
+        ->withCount('dokumenPendukung')
+        ->where('mahasiswa_id', Mahasiswa::where('user_id', Auth::id())->first()->id)
+        ->orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('kode', 'like', '%' . $request->search . '%');
+        }
+
+        $pengajuans = $query->paginate(5)->appends($request->query());
+
+        return view('dashboard.riwayat_pengajuan', compact('pengajuans'));
     }
 }
