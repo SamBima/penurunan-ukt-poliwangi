@@ -55,11 +55,12 @@ class DashboardController extends Controller
                 ->where('status', 'ditolak')
                 ->count();
         } elseif ($role === 'admin') {
+            $stats['belum_dinilai'] = PengajuanPenurunanUkt::where('status', 'diterima_keuangan')->count();
             $stats['sudah_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();
             $stats['total_pengajuan'] = PengajuanPenurunanUkt::whereIn('status', ['diterima_keuangan', 'dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir'])->count();
         } elseif ($role === 'keuangan') {
-            $stats['menunggu_approval'] = PengajuanPenurunanUkt::where('status', 'diajukan')->count();
-            $stats['menunggu_validasi'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();
+            $stats['menunggu_validasi'] = PengajuanPenurunanUkt::where('status', 'diajukan')->count();
+            $stats['belum_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();
             $stats['sudah_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_keuangan')->count();
             $stats['total_sk'] = SkPenurunanUkt::count();
         } elseif ($role === 'wadir') {

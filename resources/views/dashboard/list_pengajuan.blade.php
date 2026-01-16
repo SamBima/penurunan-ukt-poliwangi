@@ -25,14 +25,11 @@
                             <label for="status">Status</label>
                             <select class="form-control" id="status" name="status">
                                 <option value="">Semua Status</option>
-                                <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
-                                <option value="diterima_keuangan" {{ request('status') == 'diterima_keuangan' ? 'selected' : '' }}>Diterima Keuangan</option>
-                                <option value="dinilai_admin" {{ request('status') == 'dinilai_admin' ? 'selected' : '' }}>Dinilai Kajur</option>
-                                <option value="dinilai_keuangan" {{ request('status') == 'dinilai_keuangan' ? 'selected' : '' }}>Dinilai Keuangan</option>
-                                <option value="dinilai_wadir" {{ request('status') == 'dinilai_wadir' ? 'selected' : '' }}>Dinilai Wadir</option>
-                                <option value="disarankan_cicilan" {{ request('status') == 'disarankan_cicilan' ? 'selected' : '' }}>Disarankan Cicilan</option>
-                                <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                                @foreach($statusOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>

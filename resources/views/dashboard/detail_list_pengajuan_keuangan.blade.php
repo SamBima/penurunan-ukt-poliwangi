@@ -314,8 +314,8 @@
                         <div class="form-group">
                             <label for="poin_jumlah_tanggungan"><strong>Poin Jumlah Tanggungan</strong></label>
                             <input type="number" class="form-control" id="poin_jumlah_tanggungan"
-                                name="poin_jumlah_tanggungan" min="0" max="50"
-                                placeholder="0-50" required
+                                name="poin_jumlah_tanggungan" min="0" max="100"
+                                placeholder="0-100" required
                                 value="{{ old('poin_jumlah_tanggungan', $existingPoint->poin_jumlah_tanggungan ?? '') }}">
                             <small class="text-muted">Tanggungan: {{ $pengajuan->jumlah_tanggungan }} orang</small>
                         </div>
@@ -323,8 +323,8 @@
                         <div class="form-group">
                             <label for="poin_daya_listrik"><strong>Poin Daya Listrik</strong></label>
                             <input type="number" class="form-control" id="poin_daya_listrik"
-                                name="poin_daya_listrik" min="0" max="50"
-                                placeholder="0-50" required
+                                name="poin_daya_listrik" min="0" max="100"
+                                placeholder="0-100" required
                                 value="{{ old('poin_daya_listrik', $existingPoint->poin_daya_listrik ?? '') }}">
                             <small class="text-muted">Daya: {{ $pengajuan->daya_listrik }} VA</small>
                         </div>
@@ -332,8 +332,8 @@
                         <div class="form-group">
                             <label for="poin_pbb"><strong>Poin PBB</strong></label>
                             <input type="number" class="form-control" id="poin_pbb"
-                                name="poin_pbb" min="0" max="50"
-                                placeholder="0-50" required
+                                name="poin_pbb" min="0" max="100"
+                                placeholder="0-100" required
                                 value="{{ old('poin_pbb', $existingPoint->poin_pbb ?? '') }}">
                             <small class="text-muted">PBB: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }}</small>
                         </div>
@@ -341,8 +341,8 @@
                         <div class="form-group">
                             <label for="poin_wawancara"><strong>Poin Wawancara</strong></label>
                             <input type="number" class="form-control" id="poin_wawancara"
-                                name="poin_wawancara" min="0" max="50"
-                                placeholder="0-50" required
+                                name="poin_wawancara" min="0" max="100"
+                                placeholder="0-100" required
                                 value="{{ old('poin_wawancara', $existingPoint->poin_wawancara ?? '') }}">
                             <small class="text-muted">Berdasarkan hasil wawancara</small>
                         </div>

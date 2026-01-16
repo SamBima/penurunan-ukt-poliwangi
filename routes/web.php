@@ -95,14 +95,30 @@ Route::middleware(['auth'])->group(function () {
         Route::middleware(['checkRole:admin,keuangan,wadir'])->group(function () {
 
             Route::get('/list-pengajuan', function (Request $request) {
+                $user = Auth::user();
+                $role = $user->role;
+                
                 $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+
+                $allowedStatuses = [];
+                if ($role === 'keuangan') {
+                    $allowedStatuses = ['diajukan', 'dinilai_admin'];
+                } elseif ($role === 'admin') {
+                    $allowedStatuses = ['diterima_keuangan'];
+                } elseif ($role === 'wadir') 
+                    $allowedStatuses = ['dinilai_keuangan'];
+                }
+
+                if (!empty($allowedStatuses)) {
+                    if ($request->filled('status') && in_array($request->status, $allowedStatuses)) {
+                        $query->where('status', $request->status);
+                    } else {
+                        $query->whereIn('status', $allowedStatuses);
+                    }
+                }
 
                 if ($request->filled('search')) {
                     $query->search($request->search);
-                }
-
-                if ($request->filled('status')) {
-                    $query->byStatus($request->status);
                 }
 
                 if ($request->filled('semester')) {
@@ -135,7 +151,22 @@ Route::middleware(['auth'])->group(function () {
                     $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
                 }
 
-                return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions'));
+                $statusOptions = [];
+                $statusLabels = [
+                    'diajukan' => 'Diajukan',
+                    'diterima_keuangan' => 'Diterima Keuangan',
+                    'dinilai_admin' => 'Dinilai Kajur',
+                    'dinilai_keuangan' => 'Dinilai Keuangan',
+                    'dinilai_wadir' => 'Dinilai Wadir',
+                ];
+
+                foreach ($allowedStatuses as $status) {
+                    if (isset($statusLabels[$status])) {
+                        $statusOptions[$status] = $statusLabels[$status];
+                    }
+                }
+
+                return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions'));
             })->name('list-pengajuan');
 
             Route::post('/list-pengajuan/{kode}/approve', [PengajuanController::class, 'approvePengajuan'])

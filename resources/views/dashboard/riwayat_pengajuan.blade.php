@@ -120,6 +120,16 @@
 
                                 $statusIndex = array_search($pengajuan->status, array_column($steps, 'key'));
                                 $isDitolak = $pengajuan->status === 'ditolak';
+                                
+                                // Logika Hybrid untuk Visualisasi Timeline
+                                $visualActiveIndex = $statusIndex;
+                                if ($pengajuan->status === 'dinilai_admin') {
+                                    $visualActiveIndex = 3; // Loncat ke Penilaian Keuangan (Active)
+                                } elseif ($pengajuan->status === 'dinilai_keuangan') {
+                                    $visualActiveIndex = 4; // Loncat ke Keputusan Wadir (Active)
+                                } elseif ($pengajuan->status === 'dinilai_wadir') {
+                                    $visualActiveIndex = 5; // Semua Selesai (Hijau)
+                                }
                             @endphp
 
                             @if($isDitolak)
@@ -131,13 +141,13 @@
                                 <div class="timeline-progress">
                                     @foreach($steps as $index => $step)
                                         @php
-                                            $isCompleted = $statusIndex !== false && $index <= $statusIndex;
-                                            $isCurrent = $index === $statusIndex;
+                                            $isCompleted = $visualActiveIndex !== false && $index < $visualActiveIndex;
+                                            $isCurrent = $index === $visualActiveIndex;
                                         @endphp
 
                                         <div class="timeline-step {{ $isCompleted ? 'completed' : '' }} {{ $isCurrent ? 'current' : '' }}">
                                             <div class="step-icon">
-                                                @if($isCompleted && !$isCurrent)
+                                                @if($isCompleted)
                                                     <i class="fas fa-check"></i>
                                                 @else
                                                     <i class="fas fa-{{ $step['icon'] }}"></i>
@@ -147,7 +157,7 @@
                                         </div>
 
                                         @if($index < count($steps) - 1)
-                                            <div class="step-connector {{ $isCompleted && $index < $statusIndex ? 'completed' : '' }}"></div>
+                                            <div class="step-connector {{ $isCompleted ? 'completed' : '' }}"></div>
                                         @endif
                                     @endforeach
                                 </div>
