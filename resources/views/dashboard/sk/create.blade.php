@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Tambah SK Penurunan UKT</h1>
-        <a href="{{ route('sk.index') }}" class="btn btn-secondary">
+        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
@@ -103,7 +103,7 @@
                 <hr>
 
                 <div class="d-flex justify-content-between">
-                    <a href="{{ route('sk.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('dashboard') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Batal
                     </a>
                     <button type="submit" class="btn btn-primary">
@@ -123,6 +123,9 @@ $(document).ready(function () {
     $('.custom-file-input').on('change', function () {
         let fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').addClass('selected').html(fileName);
+
+        let title = fileName.replace(/\.[^/.]+$/, "");
+        $('#judul').val(title);
     });
 });
 </script>

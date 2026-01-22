@@ -77,9 +77,12 @@
 
                         <div class="form-group">
                             <label for="jalur_masuk">Jalur Masuk</label>
-                            <input type="text" name="jalur_masuk" id="jalur_masuk"
-                                class="form-control @error('jalur_masuk') is-invalid @enderror"
-                                value="{{ old('jalur_masuk', $mahasiswa->jalur_masuk ?? '') }}" required>
+                            <select name="jalur_masuk" id="jalur_masuk" class="form-control @error('jalur_masuk') is-invalid @enderror" required>
+                                <option value="">-- Pilih Jalur Masuk --</option>
+                                <option value="SBMPTN" {{ old('jalur_masuk', $mahasiswa->jalur_masuk ?? '') == 'SBMPTN' ? 'selected' : '' }}>SBMPTN</option>
+                                <option value="SNMPTN" {{ old('jalur_masuk', $mahasiswa->jalur_masuk ?? '') == 'SNMPTN' ? 'selected' : '' }}>SNMPTN</option>
+                                <option value="MANDIRI" {{ old('jalur_masuk', $mahasiswa->jalur_masuk ?? '') == 'MANDIRI' ? 'selected' : '' }}>MANDIRI</option>
+                            </select>
                             @error('jalur_masuk')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -87,7 +90,7 @@
 
                         <div class="form-group">
                             <label for="no_hp">No HP</label>
-                            <input type="text" name="no_hp" id="no_hp"
+                            <input type="number" name="no_hp" id="no_hp"
                                 class="form-control @error('no_hp') is-invalid @enderror"
                                 value="{{ old('no_hp', $mahasiswa->no_hp ?? '') }}" required>
                             @error('no_hp')
