@@ -379,7 +379,7 @@
                         <p class="mb-1"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara }}</p>
                         @endif
                         @if($validasi->hasil_score > 0)
-                        <p class="mb-1"><strong>Skor:</strong> {{ $validasi->hasil_score }}/500</p>
+                        <p class="mb-1"><strong>Skor:</strong> {{ $validasi->hasil_score }}/1000</p>
                         @endif
                         <p class="mb-1"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
                         <p class="mb-0">

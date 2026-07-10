@@ -229,7 +229,7 @@
         <div class="col-lg-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Form Penilaian Admin</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Form Penilaian Jurusan</h6>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('list-pengajuan.validasi', $pengajuan->kode) }}" method="POST" id="validasiForm">
@@ -237,97 +237,13 @@
                         <input type="hidden" name="pengajuan_id" value="{{ $pengajuan->id }}">
 
                         <h6 class="text-primary mb-3"><i class="fas fa-calculator"></i> Penilaian Poin</h6>
-
-                        <div class="form-group">
-                            <label for="poin_penghasilan_ortu"><strong>Poin Penghasilan Orang Tua</strong></label>
-                            <input type="number" class="form-control" id="poin_penghasilan_ortu"
-                                name="poin_penghasilan_ortu" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_penghasilan_ortu', $existingPoint->poin_penghasilan_ortu ?? '') }}">
-                            <small class="text-muted">Total: {{ $pengajuan->formatted_total_gaji }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_tagihan"><strong>Poin Tagihan Bulanan</strong></label>
-                            <input type="number" class="form-control" id="poin_tagihan"
-                                name="poin_tagihan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_tagihan', $existingPoint->poin_tagihan ?? '') }}">
-                            <small class="text-muted">Listrik + PDAM</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kepemilikan"><strong>Poin Kepemilikan Kendaraan</strong></label>
-                            <input type="number" class="form-control" id="poin_kepemilikan"
-                                name="poin_kepemilikan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kepemilikan', $existingPoint->poin_kepemilikan ?? '') }}">
-                            <small class="text-muted">Motor: {{ $pengajuan->jumlah_motor }}, Mobil: {{ $pengajuan->jumlah_mobil }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kondisi_rumah"><strong>Poin Kondisi Rumah</strong></label>
-                            <input type="number" class="form-control" id="poin_kondisi_rumah"
-                                name="poin_kondisi_rumah" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kondisi_rumah', $existingPoint->poin_kondisi_rumah ?? '') }}">
-                            <small class="text-muted">Dari foto rumah & dokumen</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kartu_bantuan"><strong>Poin Kartu Bantuan</strong></label>
-                            <input type="number" class="form-control" id="poin_kartu_bantuan"
-                                name="poin_kartu_bantuan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kartu_bantuan', $existingPoint->poin_kartu_bantuan ?? '') }}">
-                            <small class="text-muted">Kartu: {{ $pengajuan->kepemilikan_kartu }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_pernyataan_teman"><strong>Poin Pernyataan Teman</strong></label>
-                            <input type="number" class="form-control" id="poin_pernyataan_teman"
-                                name="poin_pernyataan_teman" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_pernyataan_teman', $existingPoint->poin_pernyataan_teman ?? '') }}">
-                            <small class="text-muted">Status: {{ $pengajuan->pernyataan_teman }}</small>
-                        </div>
-
-                        <hr>
-
-                        <div class="form-group">
-                            <label for="poin_jumlah_tanggungan"><strong>Poin Jumlah Tanggungan</strong></label>
-                            <input type="number" class="form-control" id="poin_jumlah_tanggungan"
-                                name="poin_jumlah_tanggungan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_jumlah_tanggungan', $existingPoint->poin_jumlah_tanggungan ?? '') }}">
-                            <small class="text-muted">Tanggungan: {{ $pengajuan->jumlah_tanggungan }} orang</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_daya_listrik"><strong>Poin Daya Listrik</strong></label>
-                            <input type="number" class="form-control" id="poin_daya_listrik"
-                                name="poin_daya_listrik" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_daya_listrik', $existingPoint->poin_daya_listrik ?? '') }}">
-                            <small class="text-muted">Daya: {{ $pengajuan->daya_listrik }} VA</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_pbb"><strong>Poin PBB</strong></label>
-                            <input type="number" class="form-control" id="poin_pbb"
-                                name="poin_pbb" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_pbb', $existingPoint->poin_pbb ?? '') }}">
-                            <small class="text-muted">PBB: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }}</small>
-                        </div>
-
                         <hr>
 
                         <div class="form-group">
                             <label for="poin_wawancara"><strong>Poin Wawancara</strong></label>
                             <input type="number" class="form-control" id="poin_wawancara"
-                                name="poin_wawancara" min="0" max="100"
-                                placeholder="0-100" required
+                                name="poin_wawancara" min="0" max="1000"
+                                placeholder="0-1000" required
                                 value="{{ old('poin_wawancara', $existingPoint->poin_wawancara ?? '') }}">
                             <small class="text-muted">Berdasarkan hasil wawancara</small>
                         </div>
@@ -397,7 +313,7 @@
                         @if($validasi->hasil_wawancara)
                         <p class="mb-1"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara }}</p>
                         @endif
-                        <p class="mb-1"><strong>Skor:</strong> {{ $validasi->hasil_score }}/500</p>
+                        <p class="mb-1"><strong>Skor:</strong> {{ $validasi->hasil_score }}/1000</p>
                         <p class="mb-1"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
                         <p class="mb-0">
                             <strong>Status:</strong>
