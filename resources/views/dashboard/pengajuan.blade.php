@@ -346,7 +346,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     penghasilanAyah.addEventListener('input', calculateTotal);
+    penghasilanAyah.addEventListener('change', calculateTotal);
     penghasilanIbu.addEventListener('input', calculateTotal);
+    penghasilanIbu.addEventListener('change', calculateTotal);
 
     let dokumenIndex = 4;
     document.getElementById('add-dokumen').addEventListener('click', function() {

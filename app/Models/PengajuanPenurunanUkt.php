@@ -118,6 +118,124 @@ class PengajuanPenurunanUkt extends Model
         return 'Rp ' . number_format($this->penghasilan_ibu, 0, ',', '.');
     }
 
+    public function getPoinTotalGajiAttribute()
+    {
+        $totalGaji = $this->total_gaji;
+
+        if ($totalGaji == 0) {
+            return 0;
+        } elseif ($totalGaji < 1000000) {
+            return 5;
+        } elseif ($totalGaji < 1500000) {
+            return 10;
+        } elseif ($totalGaji < 2000000) {
+            return 20;
+        } elseif ($totalGaji < 2500000) {
+            return 30;
+        } elseif ($totalGaji < 3000000) {
+            return 40;
+        } elseif ($totalGaji < 3500000) {
+            return 50;
+        } elseif ($totalGaji < 4000000) {
+            return 60;
+        } elseif ($totalGaji < 4500000) {
+            return 70;
+        } else {
+            return 80;
+        }
+    }
+
+    public function getPoinJumlahTanggunganAttribute()
+    {
+        $poinMap = [
+            0 => 80,
+            1 => 70,
+            2 => 60,
+            3 => 50,
+            4 => 40,
+            5 => 30,
+            6 => 20,
+            7 => 10,
+        ];
+
+        return $poinMap[$this->jumlah_tanggungan] ?? 10;
+    }
+
+    public function getPoinTagihanListrikAttribute()
+    {
+        $tagihanListrik = $this->tagihan_listrik;
+
+        if ($tagihanListrik < 49999) {
+            return 10;
+        } elseif ($tagihanListrik < 99999) {
+            return 20;
+        } elseif ($tagihanListrik < 149999) {
+            return 30;
+        } elseif ($tagihanListrik < 199999) {
+            return 40;
+        } elseif ($tagihanListrik < 249999) {
+            return 50;
+        } elseif ($tagihanListrik < 299999) {
+            return 60;
+        } elseif ($tagihanListrik < 350000) {
+            return 70;
+        } elseif ($tagihanListrik < 2000000) {
+            return 80;
+        } else {
+            return 90;
+        }
+    }
+    
+    public function getPoinPBBAttribute()
+    {
+        $pbb = $this->pbb;
+
+        if ($pbb < 49999) {
+            return 10;
+        } elseif ($pbb < 99999) {
+            return 20;
+        } elseif ($pbb < 149999) {
+            return 30;
+        } elseif ($pbb < 199999) {
+            return 40;
+        } elseif ($pbb < 249999) {
+            return 50;
+        } elseif ($pbb < 299999) {
+            return 60;
+        } elseif ($pbb < 350000) {
+            return 70;
+        } elseif ($pbb < 2000000) {
+            return 80;
+        } else {
+            return 100;
+        }
+    }
+    
+    public function getPoinTagihanPDAMAttribute()
+    {
+        $tagihanPDAM = $this->tagihan_pdam;
+
+        if ($tagihanPDAM < 49999) {
+            return 10;
+        } elseif ($tagihanPDAM < 99999) {
+            return 20;
+        } elseif ($tagihanPDAM < 149999) {
+            return 30;
+        } elseif ($tagihanPDAM < 199999) {
+            return 40;
+        } elseif ($tagihanPDAM < 249999) {
+            return 50;
+        } elseif ($tagihanPDAM < 299999) {
+            return 60;
+        } elseif ($tagihanPDAM < 350000) {
+            return 70;
+        } elseif ($tagihanPDAM < 2000000) {
+            return 80;
+        } else {
+            return 100;
+        }
+    }
+
     public function isCompleted()
     {
         return in_array($this->status, ['disarankan_cicilan', 'disetujui']);

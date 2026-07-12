@@ -41,7 +41,7 @@ class AuthController extends Controller
 
         if (!$user) {
             return back()
-                ->withErrors(['email' => 'Email tidak terdaftar dalam sistem.'])
+                ->withErrors(['email' => 'login.'])
                 ->withInput($request->except('password'));
         }
 

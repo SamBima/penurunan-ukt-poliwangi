@@ -91,7 +91,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Total Penghasilan</strong></td>
-                                    <td>: <strong>{{ $pengajuan->formatted_total_gaji }}</strong></td>
+                                    <td>: <strong>{{ $pengajuan->formatted_total_gaji }}</strong> <span class="badge badge-primary ml-1">{{ $pengajuan->poin_total_gaji }} Poin</span></td>
                                 </tr>
                             </table>
                         </div>
@@ -109,19 +109,19 @@
                             <table class="table table-borderless">
                                 <tr>
                                     <td><strong>Jumlah Tanggungan</strong></td>
-                                    <td>: {{ $pengajuan->jumlah_tanggungan }} orang</td>
+                                    <td>: {{ $pengajuan->jumlah_tanggungan }} orang <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_tanggungan }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Daya Listrik</strong></td>
-                                    <td>: {{ $pengajuan->daya_listrik }} VA</td>
+                                    <td>: {{ $pengajuan->daya_listrik }} VA <span class="badge badge-primary ml-1">{{ $pengajuan->poin_daya_listrik }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Tagihan Listrik</strong></td>
-                                    <td>: Rp {{ number_format($pengajuan->tagihan_listrik, 0, ',', '.') }}</td>
+                                    <td>: Rp {{ number_format($pengajuan->tagihan_listrik, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_tagihan_listrik }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Tagihan PDAM</strong></td>
-                                    <td>: Rp {{ number_format($pengajuan->tagihan_pdam, 0, ',', '.') }}</td>
+                                    <td>: Rp {{ number_format($pengajuan->tagihan_pdam, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_tagihan_pdam }} Poin</span></td>
                                 </tr>
                             </table>
                         </div>
@@ -129,19 +129,19 @@
                             <table class="table table-borderless">
                                 <tr>
                                     <td><strong>PBB</strong></td>
-                                    <td>: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }}</td>
+                                    <td>: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_pbb }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Jumlah Motor</strong></td>
-                                    <td>: {{ $pengajuan->jumlah_motor }} unit</td>
+                                    <td>: {{ $pengajuan->jumlah_motor }} unit <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_motor }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Jumlah Mobil</strong></td>
-                                    <td>: {{ $pengajuan->jumlah_mobil }} unit</td>
+                                    <td>: {{ $pengajuan->jumlah_mobil }} unit <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_mobil }} Poin</span></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Kepemilikan Kartu</strong></td>
-                                    <td>: {{ $pengajuan->kepemilikan_kartu }}</td>
+                                    <td>: {{ $pengajuan->kepemilikan_kartu }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_kepemilikan_kartu }} Poin</span></td>
                                 </tr>
                             </table>
                         </div>
@@ -254,97 +254,21 @@
 
                         <h6 class="text-primary mb-3"><i class="fas fa-calculator"></i> Penilaian Poin Keuangan</h6>
 
-                        <div class="form-group">
-                            <label for="poin_penghasilan_ortu"><strong>Poin Penghasilan Orang Tua</strong></label>
-                            <input type="number" class="form-control" id="poin_penghasilan_ortu"
-                                name="poin_penghasilan_ortu" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_penghasilan_ortu', $existingPoint->poin_penghasilan_ortu ?? '') }}">
-                            <small class="text-muted">Total: {{ $pengajuan->formatted_total_gaji }}</small>
-                        </div>
+                        @php
+                            $totalNilaiSistem = $pengajuan->poin_total_gaji + $pengajuan->poin_jumlah_tanggungan + $pengajuan->poin_daya_listrik + $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam + $pengajuan->poin_pbb + $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil + $pengajuan->poin_kepemilikan_kartu;
+                        @endphp
 
                         <div class="form-group">
-                            <label for="poin_tagihan"><strong>Poin Tagihan Bulanan</strong></label>
-                            <input type="number" class="form-control" id="poin_tagihan"
-                                name="poin_tagihan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_tagihan', $existingPoint->poin_tagihan ?? '') }}">
-                            <small class="text-muted">Listrik + PDAM</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kepemilikan"><strong>Poin Kepemilikan Kendaraan</strong></label>
-                            <input type="number" class="form-control" id="poin_kepemilikan"
-                                name="poin_kepemilikan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kepemilikan', $existingPoint->poin_kepemilikan ?? '') }}">
-                            <small class="text-muted">Motor: {{ $pengajuan->jumlah_motor }}, Mobil: {{ $pengajuan->jumlah_mobil }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kondisi_rumah"><strong>Poin Kondisi Rumah</strong></label>
-                            <input type="number" class="form-control" id="poin_kondisi_rumah"
-                                name="poin_kondisi_rumah" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kondisi_rumah', $existingPoint->poin_kondisi_rumah ?? '') }}">
-                            <small class="text-muted">Dari foto rumah & dokumen</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_kartu_bantuan"><strong>Poin Kartu Bantuan</strong></label>
-                            <input type="number" class="form-control" id="poin_kartu_bantuan"
-                                name="poin_kartu_bantuan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_kartu_bantuan', $existingPoint->poin_kartu_bantuan ?? '') }}">
-                            <small class="text-muted">Kartu: {{ $pengajuan->kepemilikan_kartu }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_pernyataan_teman"><strong>Poin Pernyataan Teman</strong></label>
-                            <input type="number" class="form-control" id="poin_pernyataan_teman"
-                                name="poin_pernyataan_teman" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_pernyataan_teman', $existingPoint->poin_pernyataan_teman ?? '') }}">
-                            <small class="text-muted">Status: {{ $pengajuan->pernyataan_teman }}</small>
-                        </div>
-
-                        <hr class="border-primary">
-                        <h6 class="text-info mb-3"><i class="fas fa-plus-circle"></i> Penilaian Tambahan</h6>
-
-                        <div class="form-group">
-                            <label for="poin_jumlah_tanggungan"><strong>Poin Jumlah Tanggungan</strong></label>
-                            <input type="number" class="form-control" id="poin_jumlah_tanggungan"
-                                name="poin_jumlah_tanggungan" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_jumlah_tanggungan', $existingPoint->poin_jumlah_tanggungan ?? '') }}">
-                            <small class="text-muted">Tanggungan: {{ $pengajuan->jumlah_tanggungan }} orang</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_daya_listrik"><strong>Poin Daya Listrik</strong></label>
-                            <input type="number" class="form-control" id="poin_daya_listrik"
-                                name="poin_daya_listrik" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_daya_listrik', $existingPoint->poin_daya_listrik ?? '') }}">
-                            <small class="text-muted">Daya: {{ $pengajuan->daya_listrik }} VA</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_pbb"><strong>Poin PBB</strong></label>
-                            <input type="number" class="form-control" id="poin_pbb"
-                                name="poin_pbb" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_pbb', $existingPoint->poin_pbb ?? '') }}">
-                            <small class="text-muted">PBB: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }}</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="poin_wawancara"><strong>Poin Wawancara</strong></label>
-                            <input type="number" class="form-control" id="poin_wawancara"
-                                name="poin_wawancara" min="0" max="100"
-                                placeholder="0-100" required
-                                value="{{ old('poin_wawancara', $existingPoint->poin_wawancara ?? '') }}">
-                            <small class="text-muted">Berdasarkan hasil wawancara</small>
+                            <label for="poin_wawancara"><strong>Rekomendasi Sistem</strong></label>
+                            <input type="number" class="form-control bg-light font-weight-bold text-center"
+                                id="poin_wawancara"
+                                name="poin_wawancara"
+                                value="{{ $existingPoint->poin_wawancara ?? $totalNilaiSistem }}"
+                                readonly>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle text-primary"></i>
+                                <strong>Total nilai dari sistem: {{ $totalNilaiSistem }}</strong>
+                            </small>
                         </div>
 
                         <hr>

@@ -253,12 +253,6 @@ class PengajuanController extends Controller
     {
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
-            'poin_penghasilan_ortu' => 'required|integer|min:0|max:100',
-            'poin_tagihan' => 'required|integer|min:0|max:100',
-            'poin_kepemilikan' => 'required|integer|min:0|max:100',
-            'poin_kondisi_rumah' => 'required|integer|min:0|max:100',
-            'poin_kartu_bantuan' => 'required|integer|min:0|max:100',
-            'poin_pernyataan_teman' => 'required|integer|min:0|max:100',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0|max:7',
             'status' => 'required|in:disetujui,disarankan_cicilan'
@@ -279,12 +273,7 @@ class PengajuanController extends Controller
                 'pengajuan_id' => $request->pengajuan_id,
                 'user_id' => Auth::id(),
                 'role' => 'admin',
-                'poin_penghasilan_ortu' => $request->poin_penghasilan_ortu,
-                'poin_tagihan' => $request->poin_tagihan,
-                'poin_kepemilikan' => $request->poin_kepemilikan,
-                'poin_kondisi_rumah' => $request->poin_kondisi_rumah,
-                'poin_kartu_bantuan' => $request->poin_kartu_bantuan,
-                'poin_pernyataan_teman' => $request->poin_pernyataan_teman,
+                'poin_wawancara' => $request->poin_wawancara,
             ]);
 
             $uktBaru = $this->calculateNewUkt($pengajuan->mahasiswa, $request->rekomendasi_ukt);
@@ -294,7 +283,7 @@ class PengajuanController extends Controller
                 'user_id' => Auth::id(),
                 'catatan' => '-',
                 'hasil_wawancara' => $request->hasil_wawancara,
-                'hasil_score' => $pointPengajuan->total_poin,
+                'hasil_score' => $pointPengajuan->poin_wawancara,
                 'rekomendasi_ukt' => $uktBaru,
                 'status' => $request->status,
             ]);
@@ -305,7 +294,7 @@ class PengajuanController extends Controller
 
             return redirect()
                 ->route('list-pengajuan.show', $kode)
-                ->with('success', 'Hasil penilaian berhasil disimpan! Total poin: ' . $pointPengajuan->total_poin);
+                ->with('success', 'Hasil penilaian berhasil disimpan! Total poin: ' . $pointPengajuan->poin_wawancara);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -321,16 +310,7 @@ class PengajuanController extends Controller
     {
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
-            'poin_penghasilan_ortu' => 'required|integer|min:0|max:100',
-            'poin_tagihan' => 'required|integer|min:0|max:100',
-            'poin_kepemilikan' => 'required|integer|min:0|max:100',
-            'poin_kondisi_rumah' => 'required|integer|min:0|max:100',
-            'poin_kartu_bantuan' => 'required|integer|min:0|max:100',
-            'poin_pernyataan_teman' => 'required|integer|min:0|max:100',
-            'poin_jumlah_tanggungan' => 'required|integer|min:0|max:100',
-            'poin_daya_listrik' => 'required|integer|min:0|max:100',
-            'poin_pbb' => 'required|integer|min:0|max:100',
-            'poin_wawancara' => 'required|integer|min:0|max:100',
+            'poin_wawancara' => 'required|integer|min:0|max:1000',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0|max:7',
             'status' => 'required|in:disetujui,disarankan_cicilan'
@@ -351,15 +331,6 @@ class PengajuanController extends Controller
                 'pengajuan_id' => $request->pengajuan_id,
                 'user_id' => Auth::id(),
                 'role' => 'keuangan',
-                'poin_penghasilan_ortu' => $request->poin_penghasilan_ortu,
-                'poin_tagihan' => $request->poin_tagihan,
-                'poin_kepemilikan' => $request->poin_kepemilikan,
-                'poin_kondisi_rumah' => $request->poin_kondisi_rumah,
-                'poin_kartu_bantuan' => $request->poin_kartu_bantuan,
-                'poin_pernyataan_teman' => $request->poin_pernyataan_teman,
-                'poin_jumlah_tanggungan' => $request->poin_jumlah_tanggungan,
-                'poin_daya_listrik' => $request->poin_daya_listrik,
-                'poin_pbb' => $request->poin_pbb,
                 'poin_wawancara' => $request->poin_wawancara,
             ]);
 
@@ -457,9 +428,9 @@ class PengajuanController extends Controller
     private function validateAccess($pengajuan, $role)
     {
         $allowedStatuses = [
-            'admin' => ['diterima_keuangan', 'dinilai_admin'],
-            'keuangan' => ['dinilai_admin', 'dinilai_keuangan'],
-            'wadir' => ['dinilai_keuangan', 'dinilai_wadir']
+            'admin' => ['dinilai_admin', 'dinilai_keuangan'],
+            'keuangan' => ['dinilai_keuangan', 'dinilai_wadir'],
+            'wadir' => ['dinilai_wadir', 'disetujui', 'disarankan_cicilan', 'selesai']
         ];
 
         if (!isset($allowedStatuses[$role])) {
@@ -482,28 +453,39 @@ class PengajuanController extends Controller
     private function calculateNewUkt($mahasiswa, $tingkatPenurunan)
     {
         $tingkatUkt = [
-            1 => 7000000,
-            2 => 5000000,
-            3 => 4000000,
+            0 => 0,
+            1 => 500000,
+            2 => 1000000,
+            3 => 2000000,
             4 => 3000000,
-            5 => 2000000,
-            6 => 1000000,
-            7 => 500000,
+            5 => 4000000,
+            6 => 5000000,
+            7 => 6000000,
         ];
 
-        $uktSaatIni = $mahasiswa->ukt_awal;
+        $uktSaatIni = (int)$mahasiswa->ukt_awal;
 
         if ($tingkatPenurunan == 0) {
             return $uktSaatIni;
         }
 
-        $tingkatSaatIni = array_search($uktSaatIni, $tingkatUkt, true);
+        $tingkatSaatIni = array_search($uktSaatIni, $tingkatUkt);
 
         if ($tingkatSaatIni === false) {
-            $tingkatSaatIni = 1;
+            // Find the closest level
+            $closestLevel = 1;
+            $minDiff = null;
+            foreach ($tingkatUkt as $level => $val) {
+                $diff = abs($val - $uktSaatIni);
+                if ($minDiff === null || $diff < $minDiff) {
+                    $minDiff = $diff;
+                    $closestLevel = $level;
+                }
+            }
+            $tingkatSaatIni = $closestLevel;
         }
 
-        $tingkatBaru = $tingkatSaatIni + $tingkatPenurunan;
+        $tingkatBaru = $tingkatSaatIni - $tingkatPenurunan;
         $tingkatBaru = max(1, min(7, $tingkatBaru));
 
         return $tingkatUkt[$tingkatBaru];
@@ -643,11 +625,23 @@ class PengajuanController extends Controller
 
     public function arsip(Request $request)
     {
+        $user = Auth::user();
+        $role = $user->role;
+
         $query = PengajuanPenurunanUkt::with(['mahasiswa']);
 
-        // Status Arsip = Selesai (dinilai_wadir menandakan selesai oleh Wadir)
-        $arsipStatuses = ['dinilai_wadir', 'ditolak'];
-        
+        // Tentukan status arsip berdasarkan role
+        if ($role === 'admin') {
+            // Untuk Admin (Kajur): data yang sudah divalidasi oleh admin (dinilai_admin, dinilai_keuangan, dinilai_wadir, ditolak)
+            $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+        } elseif ($role === 'keuangan') {
+            // Untuk Keuangan: data yang sudah divalidasi oleh keuangan (diterima_keuangan, dinilai_keuangan, dinilai_wadir, ditolak)
+            $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+        } else {
+            // Default / Wadir
+            $arsipStatuses = ['dinilai_wadir', 'ditolak'];
+        }
+
         if ($request->filled('status') && in_array($request->status, $arsipStatuses)) {
              $query->where('status', $request->status);
         } else {
@@ -666,6 +660,21 @@ class PengajuanController extends Controller
             });
         }
 
+        // Filter Semester
+        if ($request->filled('semester')) {
+            [$semester, $tahun] = explode('_', $request->semester);
+
+            $query->where(function ($q) use ($semester, $tahun) {
+                if ($semester === 'ganjil') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [7, 12]);
+                } elseif ($semester === 'genap') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [1, 6]);
+                }
+            });
+        }
+
         $query->orderBy('created_at', 'desc');
         $pengajuan = $query->paginate(10);
         $pengajuan->appends($request->query());
@@ -680,10 +689,22 @@ class PengajuanController extends Controller
             $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
         }
 
-        $statusOptions = [
+        // Buat status options berdasarkan role
+        $statusLabels = [
+            'diajukan' => 'Diajukan',
+            'diterima_keuangan' => 'Diterima Keuangan',
+            'dinilai_admin' => 'Dinilai Kajur',
+            'dinilai_keuangan' => 'Dinilai Keuangan',
             'dinilai_wadir' => 'Selesai (Keputusan Wadir)',
-            'ditolak' => 'Ditolak'
+            'ditolak' => 'Ditolak',
         ];
+
+        $statusOptions = [];
+        foreach ($arsipStatuses as $status) {
+            if (isset($statusLabels[$status])) {
+                $statusOptions[$status] = $statusLabels[$status];
+            }
+        }
         
         $isArsip = true;
 
