@@ -2,18 +2,8 @@
 
 @section('content')
 <!-- Light blue page header -->
-<div style="background-color: #badefc; padding: 20px 24px 30px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-top: -1px;">
-    <h1 style="color: #0b1a30; font-weight: 700; font-size: 26px; margin: 0 0 16px 0; font-family: 'Inter', sans-serif;">Dashboard</h1>
-    
-    <div class="d-flex align-items-center flex-wrap" style="font-size: 14px; color: #1e293b; font-weight: 600;">
-        <span class="mr-2">Filter Berdasarkan Unit:</span>
-        <select class="form-control d-inline-block" style="width: auto; max-width: 320px; height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #334155; font-weight: 500;">
-            <option>Bagian Umum dan Keuangan - BMN</option>
-            <option>Jurusan Teknik Informatika</option>
-            <option>Jurusan Teknik Sipil</option>
-            <option>Jurusan Teknik Mesin</option>
-        </select>
-    </div>
+<div style="background-color: #badefc; padding: 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-top: -1px;">
+    <h1 style="color: #0b1a30; font-weight: 700; font-size: 26px; margin: 0; font-family: 'Inter', sans-serif;">Dashboard</h1>
 </div>
 
 <div class="container-fluid py-4" style="background-color: #f1f5f9;">
