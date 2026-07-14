@@ -6,233 +6,262 @@
     <title>Login - Politeknik Negeri Banyuwangi</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 50%, #2E5A87 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
+            min-height: 100vh;
+            background-color: #0b1a30; /* Deep navy bottom background */
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .bg-overlay {
+        /* Top slanted gradient background */
+        .bg-top {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('{{ asset('assets/img/pnb.jpg') }}');
-            background-size: cover;
-            opacity: 0.3;
+            width: 100%;
+            height: 42vh;
+            background: linear-gradient(90deg, #cbe0ff 0%, #8ca2ff 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 32vh, 0 40vh);
+            z-index: 1;
         }
 
         .login-container {
             position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 2;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem 2.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 2.5rem 2.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            border: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .logo-container {
-            margin-bottom: 2rem;
-        }
-
-        .logo {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 1.5rem;
-            background: #fff;
-            border-radius: 50%;
+        /* Header Style (Logo left, Text right, centered group) */
+        .login-header {
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 12px;
+            margin-bottom: 2.25rem;
         }
 
-        .logo-inner {
-            width: 60px;
-            height: 60px;
-            background: #e74c3c;
-            border-radius: 50%;
+        .logo-img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .header-text {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .system-subtitle {
+            font-size: 13px;
+            color: #4b5563;
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.2;
         }
 
         .institution-title {
-            color: #2c3e50;
-            font-size: 1.4rem;
+            font-size: 15px;
+            color: #0b1a30;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin: 2px 0 0 0;
+            line-height: 1.2;
         }
 
-        .system-title {
-            color: #34495e;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 2.5rem;
+        /* Custom Input Groups */
+        .input-group-custom {
+            display: flex;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #ffffff;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .form-floating {
-            margin-bottom: 1.5rem;
+        .input-group-custom:focus-within {
+            border-color: #2096dc;
+            box-shadow: 0 0 0 3px rgba(32, 150, 220, 0.15);
         }
 
-        .form-floating > .form-control {
-            height: 60px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .form-floating > .form-control:focus {
-            border-color: #4A90E2;
-            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
-            background: #fff;
-        }
-
-        .form-floating > label {
-            font-weight: 500;
-            color: #6c757d;
-            padding-left: 1rem;
-        }
-
-        .btn-login {
-            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+        .input-group-custom input {
+            flex: 1;
             border: none;
-            border-radius: 12px;
-            padding: 15px 0;
-            font-size: 1.1rem;
+            padding: 12px 14px;
+            font-size: 14px;
+            color: #374151;
+            outline: none;
+            background: transparent;
+        }
+
+        .input-group-custom input::placeholder {
+            color: #9ca3af;
+            opacity: 1;
+        }
+
+        .input-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-left: 1px solid #e5e7eb;
+            color: #0ea5e9; /* Cyan icon color */
+            flex-shrink: 0;
+            background: #ffffff;
+        }
+
+        .input-icon-container svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Action bar (Masuk button on the right) */
+        .action-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .btn-submit {
+            background-color: #2096dc;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 24px;
+            font-size: 14px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            width: 100%;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
         }
 
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-            background: linear-gradient(135deg, #357ABD 0%, #2E5A87 100%);
+        .btn-submit:hover {
+            background-color: #1a7ebc;
         }
 
-        .btn-login:active {
-            transform: translateY(0);
+        .btn-submit:active {
+            transform: scale(0.98);
         }
 
-        @media (max-width: 576px) {
-            .login-card {
-                margin: 1rem;
-                padding: 2rem 1.5rem;
-            }
-
-            .institution-title {
-                font-size: 1.2rem;
-            }
-
-            .system-title {
-                font-size: 1rem;
-            }
+        .btn-submit:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
         }
 
-        .login-card {
-            animation: slideUp 0.6s ease-out;
-        }
-
+        /* Animation */
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-overlay"></div>
+    <!-- Background top slanted -->
+    <div class="bg-top"></div>
 
     <div class="login-container">
         <div class="login-card">
-            <div class="logo-container">
-                <div class="logo">
-                    <div class="logo-inner">
-                        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" class="logo-img" width="120">
-                    </div>
+            <!-- Header -->
+            <div class="login-header">
+                <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" class="logo-img">
+                <div class="header-text">
+                    <span class="system-subtitle">Sistem Informasi Akademik</span>
+                    <h1 class="institution-title">Politeknik Negeri Banyuwangi</h1>
                 </div>
             </div>
 
-            <h1 class="institution-title">Politeknik Negeri Banyuwangi</h1>
-            <h2 class="system-title">Penyesuaian Uang Kuliah Tunggal</h2>
-
+            <!-- Form -->
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
-                <div class="form-floating">
+                <!-- Username/Email input -->
+                <div class="input-group-custom @error('email') border-danger @enderror">
                     <input type="email"
-                           class="form-control @error('email') is-invalid @enderror"
                            id="email"
                            name="email"
-                           placeholder="Email"
+                           placeholder="username"
                            value="{{ old('email') }}"
                            required
                            autofocus>
-                    <label for="email">Email</label>
-                    @error('email')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                    <div class="input-icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
                 </div>
+                @error('email')
+                    <div class="text-danger text-start mb-3 small" style="margin-top: -10px; font-size: 12px;">
+                        {{ $message }}
+                    </div>
+                @enderror
 
-                <div class="form-floating">
+                <!-- Password input -->
+                <div class="input-group-custom @error('password') border-danger @enderror">
                     <input type="password"
-                           class="form-control @error('password') is-invalid @enderror"
                            id="password"
                            name="password"
                            placeholder="Password"
                            required>
-                    <label for="password">Password</label>
-                    @error('password')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
-                    @enderror
+                    <div class="input-icon-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                        </svg>
+                    </div>
                 </div>
+                @error('password')
+                    <div class="text-danger text-start mb-3 small" style="margin-top: -10px; font-size: 12px;">
+                        {{ $message }}
+                    </div>
+                @enderror
 
-                <button type="submit" class="btn btn-login">
-                    Login
-                </button>
+                <!-- Submit Button -->
+                <div class="action-container">
+                    <button type="submit" class="btn-submit">
+                        Masuk
+                    </button>
+                </div>
             </form>
 
-            @if ($errors->any())
-                <div class="alert alert-danger mt-3">
-                    <ul class="mb-0">
+            <!-- Alerts for other errors -->
+            @if ($errors->any() && !$errors->has('email') && !$errors->has('password'))
+                <div class="alert alert-danger mt-3 py-2 px-3" style="font-size: 13px; border-radius: 6px;">
+                    <ul class="mb-0 ps-3">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -241,7 +270,7 @@
             @endif
 
             @if (session('status'))
-                <div class="alert alert-success mt-3">
+                <div class="alert alert-success mt-3 py-2 px-3" style="font-size: 13px; border-radius: 6px;">
                     {{ session('status') }}
                 </div>
             @endif
@@ -249,21 +278,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        document.querySelectorAll('.form-control').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'translateY(-2px)';
-            });
-
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'translateY(0)';
-            });
-        });
-
         document.querySelector('form').addEventListener('submit', function() {
-            const button = this.querySelector('.btn-login');
-            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+            const button = this.querySelector('.btn-submit');
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" style="width: 14px; height: 14px;"></span>Masuk...';
             button.disabled = true;
         });
     </script>
