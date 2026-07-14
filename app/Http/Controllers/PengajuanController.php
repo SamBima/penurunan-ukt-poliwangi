@@ -458,9 +458,9 @@ class PengajuanController extends Controller
     private function validateAccess($pengajuan, $role)
     {
         $allowedStatuses = [
-            'admin' => ['dinilai_admin', 'dinilai_keuangan'],
-            'keuangan' => ['dinilai_keuangan', 'dinilai_wadir'],
-            'wadir' => ['dinilai_wadir', 'disetujui', 'disarankan_cicilan', 'selesai']
+            'admin' => ['diterima_keuangan'],
+            'keuangan' => ['diajukan', 'dinilai_admin'],
+            'wadir' => ['dinilai_keuangan']
         ];
 
         if (!isset($allowedStatuses[$role])) {
