@@ -306,7 +306,6 @@
                         @if($validasi->hasil_wawancara)
                         <p class="mb-1"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara }}</p>
                         @endif
-                        <p class="mb-1"><strong>Skor:</strong> {{ $validasi->hasil_score }}/1000</p>
                         <p class="mb-1"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
                         <p class="mb-0">
                             <strong>Status:</strong>

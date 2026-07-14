@@ -66,12 +66,21 @@ class HasilValidasi extends Model
 
     public function getStatusLabelAttribute()
     {
-        $statusLabels = [
-            'disetujui' => 'Disetujui',
-            'disarankan_cicilan' => 'Disarankan Cicilan',
-        ];
+        if ($this->status === 'disetujui') {
+            if ($this->berlaku_selama) {
+                if ($this->berlaku_selama === 'Sampai Lulus') {
+                    return 'Disetujui Sampai Lulus';
+                }
+                return 'Disetujui Penurunan ' . $this->berlaku_selama;
+            }
+            return 'Disetujui Penurunan';
+        }
 
-        return $statusLabels[$this->status] ?? $this->status;
+        if ($this->status === 'disarankan_cicilan') {
+            return 'UKT tetap / diangsur';
+        }
+
+        return $this->status;
     }
 
     public function getFormattedRekomendasiUktAttribute()

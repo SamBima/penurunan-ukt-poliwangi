@@ -223,7 +223,7 @@
                                 <p class="mb-0">
                                     <strong>Keputusan:</strong>
                                     <span class="badge badge-{{ $validasi->status == 'disetujui' ? 'success' : 'warning' }}">
-                                        {{ ucwords(str_replace('_', ' ', $validasi->status)) }}
+                                        {{ $validasi->status_label }}
                                     </span>
                                 </p>
                                 
