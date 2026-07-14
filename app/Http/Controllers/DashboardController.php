@@ -54,6 +54,7 @@ class DashboardController extends Controller
     private function getStatsByRole($role)
     {
         $stats = [];
+        $user = Auth::user();
 
         if ($role === 'mahasiswa') {
             $mahasiswa = Auth::user()->mahasiswa;
