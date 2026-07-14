@@ -78,7 +78,6 @@ class UserSeeder extends Seeder
             }
         }
 
-        // Seed a default student profile for Mahasiswa Demo
         $mahasiswaUser = DB::table('users')->where('email', 'mahasiswa@example.com')->first();
         $prodiId = DB::table('prodi')->where('nama', 'Sarjana Terapan Teknologi Rekayasa Perangkat Lunak')->value('id') 
                    ?? DB::table('prodi')->first()->id;

@@ -281,9 +281,9 @@
                         <input type="hidden" name="hasil_wawancara" value="-">
 
                         <div class="form-group">
-                            <label for="rekomendasi_ukt"><strong>Rekomendasi UKT Baru</strong></label>
+                            <label for="rekomendasi_ukt"><strong>Rekomendasi Tingkat Penurunan</strong></label>
                             <select class="form-control" id="rekomendasi_ukt" name="rekomendasi_ukt" required>
-                                <option value="">Pilih Tingkat UKT</option>
+                                <option value="">Pilih Tingkat</option>
                                 <option value="0">Turun 0 Tingkat (Tetap)</option>
                                 <option value="7">Turun 7 Tingkat</option>
                                 <option value="6">Turun 6 Tingkat</option>
@@ -296,11 +296,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="status"><strong>Keputusan Akhir</strong></label>
+                            <label for="status"><strong>Rekomendasi</strong></label>
                             <select class="form-control" id="status" name="status" required>
-                                <option value="">Pilih Keputusan</option>
-                                <option value="disetujui">Disetujui</option>
-                                <option value="disarankan_cicilan">Disarankan Cicilan</option>
+                                <option value="">Pilih Rekomendasi</option>
+                                <option value="disetujui|1 Semester">Disetujui Penurunan 1 Semester</option>
+                                <option value="disetujui|2 Semester">Disetujui Penurunan 2 Semester</option>
+                                <option value="disetujui|3 Semester">Disetujui Penurunan 3 Semester</option>
+                                <option value="disetujui|4 Semester">Disetujui Penurunan 4 Semester</option>
+                                <option value="disetujui|Sampai Lulus">Disetujui Sampai Lulus</option>
+                                <option value="disarankan_cicilan|1 Semester">UKT tetap / diangsur</option>
                             </select>
                         </div>
 

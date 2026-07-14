@@ -255,7 +255,7 @@ class PengajuanController extends Controller
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0|max:7',
-            'status' => 'required|in:disetujui,disarankan_cicilan'
+            'status' => 'required|string'
         ]);
 
         try {
@@ -274,6 +274,14 @@ class PengajuanController extends Controller
                 throw new \Exception('Anda tidak memiliki akses untuk menilai pengajuan dari jurusan lain.');
             }
 
+            $statusParts = explode('|', $request->status);
+            $status = $statusParts[0];
+            $berlakuSelama = $statusParts[1] ?? null;
+
+            if (!in_array($status, ['disetujui', 'disarankan_cicilan'])) {
+                throw new \Exception('Rekomendasi status tidak valid.');
+            }
+
             $pointPengajuan = PointPengajuan::create([
                 'pengajuan_id' => $request->pengajuan_id,
                 'user_id' => Auth::id(),
@@ -290,7 +298,8 @@ class PengajuanController extends Controller
                 'hasil_wawancara' => $request->hasil_wawancara,
                 'hasil_score' => $pointPengajuan->poin_wawancara,
                 'rekomendasi_ukt' => $uktBaru,
-                'status' => $request->status,
+                'status' => $status,
+                'berlaku_selama' => $berlakuSelama,
             ]);
 
             $pengajuan->update(['status' => 'dinilai_admin']);
@@ -318,7 +327,7 @@ class PengajuanController extends Controller
             'poin_wawancara' => 'required|integer|min:0|max:1000',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0|max:7',
-            'status' => 'required|in:disetujui,disarankan_cicilan'
+            'status' => 'required|string'
         ]);
 
         try {
@@ -331,6 +340,14 @@ class PengajuanController extends Controller
             }
 
             $this->validateAccess($pengajuan, 'keuangan');
+
+            $statusParts = explode('|', $request->status);
+            $status = $statusParts[0];
+            $berlakuSelama = $statusParts[1] ?? null;
+
+            if (!in_array($status, ['disetujui', 'disarankan_cicilan'])) {
+                throw new \Exception('Rekomendasi status tidak valid.');
+            }
 
             $pointPengajuan = PointPengajuan::create([
                 'pengajuan_id' => $request->pengajuan_id,
@@ -348,7 +365,8 @@ class PengajuanController extends Controller
                 'hasil_wawancara' => $request->hasil_wawancara,
                 'hasil_score' => $pointPengajuan->total_poin,
                 'rekomendasi_ukt' => $uktBaru,
-                'status' => $request->status,
+                'status' => $status,
+                'berlaku_selama' => $berlakuSelama,
             ]);
 
             $pengajuan->update(['status' => 'dinilai_keuangan']);
@@ -373,9 +391,8 @@ class PengajuanController extends Controller
     {
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
-            'status' => 'required|in:disetujui,disarankan_cicilan',
+            'status' => 'required|string',
             'rekomendasi_ukt' => 'required|integer|min:0|max:7',
-            'berlaku_selama' => 'required|string'
         ]);
 
         try {
@@ -399,6 +416,14 @@ class PengajuanController extends Controller
                 throw new \Exception('Belum ada validasi dari Keuangan');
             }
 
+            $statusParts = explode('|', $request->status);
+            $status = $statusParts[0];
+            $berlakuSelama = $statusParts[1] ?? null;
+
+            if (!in_array($status, ['disetujui', 'disarankan_cicilan'])) {
+                throw new \Exception('Keputusan status tidak valid.');
+            }
+
             $uktBaru = $this->calculateNewUkt($pengajuan->mahasiswa, $request->rekomendasi_ukt);
 
             HasilValidasi::create([
@@ -408,11 +433,11 @@ class PengajuanController extends Controller
                 'hasil_wawancara' => '-',
                 'hasil_score' => 0,
                 'rekomendasi_ukt' => $uktBaru,
-                'status' => $request->status,
-                'berlaku_selama' => $request->berlaku_selama,
+                'status' => $status,
+                'berlaku_selama' => $berlakuSelama,
             ]);
 
-            $pengajuan->update(['status' => 'dinilai_wadir']);
+            $pengajuan->update(['status' => $status]);
 
             DB::commit();
 
