@@ -236,6 +236,47 @@ class PengajuanPenurunanUkt extends Model
         }
     }
 
+    public function getPoinDayaListrikAttribute()
+    {
+        $daya = (int) $this->daya_listrik;
+
+        if ($daya >= 0 && $daya <= 450) {
+            return 10;
+        } elseif ($daya <= 900) {
+            return 20;
+        } elseif ($daya <= 1300) {
+            return 30;
+        } else {
+            return 40;
+        }
+    }
+
+    public function getPoinJumlahMotorAttribute()
+    {
+        $motor = (int) $this->jumlah_motor;
+        if ($motor === 0) return 10;
+        if ($motor === 1) return 30;
+        if ($motor === 2) return 60;
+        return 80;
+    }
+
+    public function getPoinJumlahMobilAttribute()
+    {
+        $mobil = (int) $this->jumlah_mobil;
+        if ($mobil === 0) return 10;
+        if ($mobil === 1) return 40;
+        return 80;
+    }
+
+    public function getPoinKepemilikanKartuAttribute()
+    {
+        return match($this->kepemilikan_kartu) {
+            'kip', 'pkh', 'bpnt' => 10,
+            'tidak_ada' => 80,
+            default => 40,
+        };
+    }
+
     public function isCompleted()
     {
         return in_array($this->status, ['disarankan_cicilan', 'disetujui']);
