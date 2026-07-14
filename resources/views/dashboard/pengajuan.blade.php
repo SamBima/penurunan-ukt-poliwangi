@@ -103,9 +103,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="jumlah_tanggungan">Jumlah Tanggungan <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control @error('jumlah_tanggungan') is-invalid @enderror"
-                                   id="jumlah_tanggungan" name="jumlah_tanggungan"
-                                   value="{{ old('jumlah_tanggungan') }}" required min="0">
+                            <select class="form-control @error('jumlah_tanggungan') is-invalid @enderror"
+                                    id="jumlah_tanggungan" name="jumlah_tanggungan" required>
+                                <option value="">-- Pilih Jumlah Tanggungan --</option>
+                                @for($n = 0; $n <= 7; $n++)
+                                    <option value="{{ $n }}" {{ old('jumlah_tanggungan') !== null && old('jumlah_tanggungan') == $n ? 'selected' : '' }}>{{ $n }}</option>
+                                @endfor
+                            </select>
                             @error('jumlah_tanggungan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -175,9 +179,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="jumlah_motor">Jumlah Motor <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('jumlah_motor') is-invalid @enderror"
-                                   id="jumlah_motor" name="jumlah_motor"
-                                   value="{{ old('jumlah_motor') }}" min="0" required>
+                            <select class="form-control @error('jumlah_motor') is-invalid @enderror"
+                                    id="jumlah_motor" name="jumlah_motor" required>
+                                <option value="">-- Pilih Jumlah Motor --</option>
+                                @for($n = 0; $n <= 7; $n++)
+                                    <option value="{{ $n }}" {{ old('jumlah_motor') !== null && old('jumlah_motor') == $n ? 'selected' : '' }}>{{ $n }}</option>
+                                @endfor
+                            </select>
                             @error('jumlah_motor')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -187,9 +195,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="jumlah_mobil">Jumlah Mobil <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('jumlah_mobil') is-invalid @enderror"
-                                   id="jumlah_mobil" name="jumlah_mobil"
-                                   value="{{ old('jumlah_mobil') }}" min="0" required>
+                            <select class="form-control @error('jumlah_mobil') is-invalid @enderror"
+                                    id="jumlah_mobil" name="jumlah_mobil" required>
+                                <option value="">-- Pilih Jumlah Mobil --</option>
+                                @for($n = 0; $n <= 7; $n++)
+                                    <option value="{{ $n }}" {{ old('jumlah_mobil') !== null && old('jumlah_mobil') == $n ? 'selected' : '' }}>{{ $n }}</option>
+                                @endfor
+                            </select>
                             @error('jumlah_mobil')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
