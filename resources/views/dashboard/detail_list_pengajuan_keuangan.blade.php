@@ -281,21 +281,6 @@
                         <input type="hidden" name="hasil_wawancara" value="-">
 
                         <div class="form-group">
-                            <label for="rekomendasi_ukt"><strong>Rekomendasi Tingkat Penurunan</strong></label>
-                            <select class="form-control" id="rekomendasi_ukt" name="rekomendasi_ukt" required>
-                                <option value="">Pilih Tingkat</option>
-                                <option value="0">Turun 0 Tingkat (Tetap)</option>
-                                <option value="7">Turun 7 Tingkat</option>
-                                <option value="6">Turun 6 Tingkat</option>
-                                <option value="5">Turun 5 Tingkat</option>
-                                <option value="4">Turun 4 Tingkat</option>
-                                <option value="3">Turun 3 Tingkat</option>
-                                <option value="2">Turun 2 Tingkat</option>
-                                <option value="1">Turun 1 Tingkat</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
                             <label for="status"><strong>Rekomendasi</strong></label>
                             <select class="form-control" id="status" name="status" required>
                                 <option value="">Pilih Rekomendasi</option>
@@ -305,6 +290,22 @@
                                 <option value="disetujui|4 Semester">Disetujui Penurunan 4 Semester</option>
                                 <option value="disetujui|Sampai Lulus">Disetujui Sampai Lulus</option>
                                 <option value="disarankan_cicilan|1 Semester">UKT tetap / diangsur</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rekomendasi_ukt"><strong>Keputusan Penurunan Tarif UKT</strong></label>
+                            <select class="form-control" id="rekomendasi_ukt" name="rekomendasi_ukt" required>
+                                <option value="">Pilih Tarif UKT</option>
+                                <option value="0">UKT Tetap (Tidak Ada Penurunan)</option>
+                                <option value="500000">500.000</option>
+                                <option value="1000000">1.000.000</option>
+                                <option value="2000000">2.000.000</option>
+                                <option value="3000000">3.000.000</option>
+                                <option value="4000000">4.000.000</option>
+                                <option value="5000000">5.000.000</option>
+                                <option value="6000000">6.000.000</option>
+                                <option value="7000000">7.000.000</option>
                             </select>
                         </div>
 

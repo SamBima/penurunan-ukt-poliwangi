@@ -254,7 +254,7 @@ class PengajuanController extends Controller
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
             'hasil_wawancara' => 'nullable|string|max:1000',
-            'rekomendasi_ukt' => 'required|integer|min:0|max:7',
+            'rekomendasi_ukt' => 'required|integer|min:0',
             'status' => 'required|string'
         ]);
 
@@ -326,7 +326,7 @@ class PengajuanController extends Controller
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
             'poin_wawancara' => 'required|integer|min:0|max:1000',
             'hasil_wawancara' => 'nullable|string|max:1000',
-            'rekomendasi_ukt' => 'required|integer|min:0|max:7',
+            'rekomendasi_ukt' => 'required|integer|min:0',
             'status' => 'required|string'
         ]);
 
@@ -392,7 +392,7 @@ class PengajuanController extends Controller
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
             'status' => 'required|string',
-            'rekomendasi_ukt' => 'required|integer|min:0|max:7',
+            'rekomendasi_ukt' => 'required|integer|min:0',
         ]);
 
         try {
