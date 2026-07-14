@@ -336,7 +336,8 @@ class PengajuanController extends Controller
     {
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
-            'poin_wawancara' => 'nullable|integer|min:0|max:1000',
+            'poin_wawancara' => 'nullable|integer|min:0',
+            'poin_kondisi_rumah' => 'nullable|integer|min:0|max:100',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0',
             'status' => 'required|string',
@@ -361,6 +362,8 @@ class PengajuanController extends Controller
                 throw new \Exception('Rekomendasi status tidak valid.');
             }
 
+            $poinKondisiRumah = (int) ($request->poin_kondisi_rumah ?? 0);
+
             $pointPengajuan = PointPengajuan::updateOrCreate(
                 [
                     'pengajuan_id' => $request->pengajuan_id,
@@ -369,6 +372,7 @@ class PengajuanController extends Controller
                 ],
                 [
                     'poin_wawancara' => $request->poin_wawancara,
+                    'poin_kondisi_rumah' => $poinKondisiRumah,
                 ]
             );
 

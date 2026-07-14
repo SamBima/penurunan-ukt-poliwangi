@@ -254,26 +254,38 @@ class PengajuanPenurunanUkt extends Model
     public function getPoinJumlahMotorAttribute()
     {
         $motor = (int) $this->jumlah_motor;
-        if ($motor === 0) return 10;
-        if ($motor === 1) return 30;
-        if ($motor === 2) return 60;
-        return 80;
+        if ($motor === 0) return 0;
+        if ($motor === 1) return 10;
+        if ($motor === 2) return 15;
+        if ($motor === 3) return 20;
+        if ($motor === 4) return 25;
+        if ($motor === 5) return 30;
+        if ($motor === 6) return 35;
+        if ($motor === 7) return 40;
+        return 45;
     }
 
     public function getPoinJumlahMobilAttribute()
     {
         $mobil = (int) $this->jumlah_mobil;
-        if ($mobil === 0) return 10;
-        if ($mobil === 1) return 40;
+        if ($mobil === 0) return 0;
+        if ($mobil === 1) return 10;
+        if ($mobil === 2) return 20;
+        if ($mobil === 3) return 30;
+        if ($mobil === 4) return 40;
+        if ($mobil === 5) return 50;
+        if ($mobil === 6) return 60;
+        if ($mobil === 7) return 70;
         return 80;
     }
 
     public function getPoinKepemilikanKartuAttribute()
     {
         return match($this->kepemilikan_kartu) {
-            'kip', 'pkh', 'bpnt' => 10,
-            'tidak_ada' => 80,
-            default => 40,
+            'kip', 'pkh', 'bpnt' => -15,
+            'tidak_ada' => 0,
+            'KKS' => -10,
+            'SKTM' => -5,
         };
     }
 

@@ -204,6 +204,22 @@
                                         <small>{{ $dokumen->keterangan }}</small>
                                     </div>
                                     @endif
+                                    @if($dokumen->jenis_dokumen === 'foto_rumah')
+                                    <div class="card-footer bg-warning bg-opacity-10">
+                                        <label class="mb-1 small font-weight-bold text-warning">
+                                            <i class="fas fa-star"></i> Skor Kondisi Rumah (Maks. 100)
+                                        </label>
+                                        <input type="number"
+                                            class="form-control form-control-sm text-center font-weight-bold"
+                                            id="poin_kondisi_rumah"
+                                            name="poin_kondisi_rumah"
+                                            min="0" max="100"
+                                            value="{{ old('poin_kondisi_rumah', $existingPoint->poin_kondisi_rumah ?? 0) }}"
+                                            placeholder="0 - 100"
+                                            oninput="hitungTotalPoin()">
+                                        <small class="text-muted">Nilai manual dari inspeksi foto rumah</small>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                             @endforeach
@@ -256,18 +272,22 @@
 
                         @php
                             $totalNilaiSistem = $pengajuan->poin_total_gaji + $pengajuan->poin_jumlah_tanggungan + $pengajuan->poin_daya_listrik + $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam + $pengajuan->poin_pbb + $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil + $pengajuan->poin_kepemilikan_kartu;
+                            $poinRumahExisting = $existingPoint->poin_kondisi_rumah ?? 0;
+                            $totalDenganRumah = $totalNilaiSistem + $poinRumahExisting;
                         @endphp
 
                         <div class="form-group">
-                            <label for="poin_wawancara"><strong>Rekomendasi Sistem</strong></label>
-                            <input type="number" class="form-control bg-light font-weight-bold text-center"
-                                id="poin_wawancara"
-                                name="poin_wawancara"
-                                value="{{ $existingPoint->poin_wawancara ?? $totalNilaiSistem }}"
-                                readonly>
-                            <small class="text-muted">
+                            <label><strong>Nilai dari Sistem</strong></label>
+                            <div class="d-flex align-items-center">
+                                <input type="number" class="form-control bg-light font-weight-bold text-center mr-2"
+                                    id="poin_wawancara"
+                                    name="poin_wawancara"
+                                    value="{{ $totalDenganRumah }}"
+                                    readonly>
+                            </div>
+                            <small class="text-muted" id="total_label_detail">
                                 <i class="fas fa-info-circle text-primary"></i>
-                                <strong>Total nilai dari sistem: {{ $totalNilaiSistem }}</strong>
+                                <strong>Otomatis: nilai sistem ({{ $totalNilaiSistem }}) + skor kondisi rumah</strong>
                             </small>
                         </div>
 
@@ -365,4 +385,35 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    const TOTAL_NILAI_SISTEM = {{ $totalNilaiSistem }};
+
+    function hitungTotalPoin() {
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        const inputTotal = document.getElementById('poin_wawancara');
+        const labelDetail = document.getElementById('total_label_detail');
+
+        if (!inputRumah || !inputTotal) return;
+
+        let skorRumah = parseInt(inputRumah.value) || 0;
+        if (skorRumah < 0) { skorRumah = 0; inputRumah.value = 0; }
+        if (skorRumah > 100) { skorRumah = 100; inputRumah.value = 100; }
+
+        const totalBaru = TOTAL_NILAI_SISTEM + skorRumah;
+        inputTotal.value = totalBaru;
+
+        if (labelDetail) {
+            labelDetail.innerHTML = `<i class="fas fa-info-circle text-primary"></i> <strong>Otomatis: nilai sistem (${TOTAL_NILAI_SISTEM}) + skor kondisi rumah (${skorRumah}) = ${totalBaru}</strong>`;
+        }
+    }
+
+    // Jalankan sekali saat halaman dimuat untuk sinkronisasi awal
+    document.addEventListener('DOMContentLoaded', function () {
+        hitungTotalPoin();
+    });
+</script>
+@endpush
+
 @endsection
