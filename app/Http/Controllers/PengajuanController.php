@@ -255,13 +255,13 @@ class PengajuanController extends Controller
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0',
-            'status' => 'required|string'
+            'status' => 'required|string',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $pengajuan = PengajuanPenurunanUkt::with('mahasiswa.prodi')->findOrFail($request->pengajuan_id);
+            $pengajuan = PengajuanPenurunanUkt::with('mahasiswa')->findOrFail($request->pengajuan_id);
 
             if ($pengajuan->kode !== $kode) {
                 throw new \Exception('Kode pengajuan tidak sesuai');
@@ -289,14 +289,18 @@ class PengajuanController extends Controller
                 'poin_wawancara' => $request->poin_wawancara,
             ]);
 
-            $uktBaru = $this->calculateNewUkt($pengajuan->mahasiswa, $request->rekomendasi_ukt);
+            if ($status === 'disarankan_cicilan') {
+                $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+            } else {
+                $uktBaru = (int) $request->rekomendasi_ukt;
+            }
 
             HasilValidasi::create([
                 'pengajuan_id' => $request->pengajuan_id,
                 'user_id' => Auth::id(),
                 'catatan' => '-',
-                'hasil_wawancara' => $request->hasil_wawancara,
-                'hasil_score' => $pointPengajuan->poin_wawancara,
+                'hasil_wawancara' => $request->hasil_wawancara ?? '-',
+                'hasil_score' => 0,
                 'rekomendasi_ukt' => $uktBaru,
                 'status' => $status,
                 'berlaku_selama' => $berlakuSelama,
@@ -308,7 +312,7 @@ class PengajuanController extends Controller
 
             return redirect()
                 ->route('list-pengajuan.show', $kode)
-                ->with('success', 'Hasil penilaian berhasil disimpan! Total poin: ' . $pointPengajuan->poin_wawancara);
+                ->with('success', 'Hasil penilaian berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -324,10 +328,10 @@ class PengajuanController extends Controller
     {
         $request->validate([
             'pengajuan_id' => 'required|exists:pengajuan_penurunan_ukt,id',
-            'poin_wawancara' => 'required|integer|min:0|max:1000',
+            'poin_wawancara' => 'nullable|integer|min:0|max:1000',
             'hasil_wawancara' => 'nullable|string|max:1000',
             'rekomendasi_ukt' => 'required|integer|min:0',
-            'status' => 'required|string'
+            'status' => 'required|string',
         ]);
 
         try {
@@ -356,14 +360,18 @@ class PengajuanController extends Controller
                 'poin_wawancara' => $request->poin_wawancara,
             ]);
 
-            $uktBaru = $this->calculateNewUkt($pengajuan->mahasiswa, $request->rekomendasi_ukt);
+            if ($status === 'disarankan_cicilan') {
+                $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+            } else {
+                $uktBaru = (int) $request->rekomendasi_ukt;
+            }
 
             HasilValidasi::create([
                 'pengajuan_id' => $request->pengajuan_id,
                 'user_id' => Auth::id(),
                 'catatan' => '-',
-                'hasil_wawancara' => $request->hasil_wawancara,
-                'hasil_score' => $pointPengajuan->total_poin,
+                'hasil_wawancara' => $request->hasil_wawancara ?? '-',
+                'hasil_score' => 0,
                 'rekomendasi_ukt' => $uktBaru,
                 'status' => $status,
                 'berlaku_selama' => $berlakuSelama,
@@ -375,7 +383,7 @@ class PengajuanController extends Controller
 
             return redirect()
                 ->route('list-pengajuan.show', $kode)
-                ->with('success', 'Hasil penilaian berhasil disimpan! Total poin: ' . $pointPengajuan->total_poin);
+                ->with('success', 'Hasil penilaian berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -424,7 +432,11 @@ class PengajuanController extends Controller
                 throw new \Exception('Keputusan status tidak valid.');
             }
 
-            $uktBaru = $this->calculateNewUkt($pengajuan->mahasiswa, $request->rekomendasi_ukt);
+            if ($status === 'disarankan_cicilan') {
+                $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+            } else {
+                $uktBaru = (int) $request->rekomendasi_ukt;
+            }
 
             HasilValidasi::create([
                 'pengajuan_id' => $request->pengajuan_id,
@@ -437,7 +449,7 @@ class PengajuanController extends Controller
                 'berlaku_selama' => $berlakuSelama,
             ]);
 
-            $pengajuan->update(['status' => $status]);
+            $pengajuan->update(['status' => 'dinilai_wadir']);
 
             DB::commit();
 
@@ -458,9 +470,9 @@ class PengajuanController extends Controller
     private function validateAccess($pengajuan, $role)
     {
         $allowedStatuses = [
-            'admin' => ['diterima_keuangan'],
-            'keuangan' => ['diajukan', 'dinilai_admin'],
-            'wadir' => ['dinilai_keuangan']
+            'admin' => ['dinilai_admin', 'dinilai_keuangan'],
+            'keuangan' => ['dinilai_keuangan', 'dinilai_wadir'],
+            'wadir' => ['dinilai_wadir', 'disetujui', 'disarankan_cicilan', 'selesai']
         ];
 
         if (!isset($allowedStatuses[$role])) {
@@ -573,7 +585,7 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi.jurusan']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
 
         // Tentukan status yang bisa dilihat berdasarkan role
         $allowedStatuses = [];
@@ -581,11 +593,6 @@ class PengajuanController extends Controller
             $allowedStatuses = ['diajukan', 'dinilai_admin'];
         } elseif ($role === 'admin') {
             $allowedStatuses = ['diterima_keuangan'];
-            if ($user->jurusan_id) {
-                $query->whereHas('mahasiswa.prodi', function($q) use ($user) {
-                    $q->where('jurusan_id', $user->jurusan_id);
-                });
-            }
         } elseif ($role === 'wadir') {
             $allowedStatuses = ['dinilai_keuangan'];
         }
@@ -663,17 +670,12 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
 
-        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi.jurusan']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
 
         // Tentukan status arsip berdasarkan role
         if ($role === 'admin') {
             // Untuk Admin (Kajur): data yang sudah divalidasi oleh admin (dinilai_admin, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
-            if ($user->jurusan_id) {
-                $query->whereHas('mahasiswa.prodi', function($q) use ($user) {
-                    $q->where('jurusan_id', $user->jurusan_id);
-                });
-            }
         } elseif ($role === 'keuangan') {
             // Untuk Keuangan: data yang sudah divalidasi oleh keuangan (diterima_keuangan, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];

@@ -259,7 +259,7 @@
                             <label for="rekomendasi_ukt"><strong>Keputusan Penurunan Tarif UKT</strong></label>
                             <select class="form-control" id="rekomendasi_ukt" name="rekomendasi_ukt" required>
                                 <option value="">Pilih Tarif UKT</option>
-                                <option value="0">UKT Tetap (Tidak Ada Penurunan)</option>
+                                <option value="0">UKT Tetap / diangsur</option>
                                 <option value="500000">500.000</option>
                                 <option value="1000000">1.000.000</option>
                                 <option value="2000000">2.000.000</option>
