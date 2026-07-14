@@ -282,12 +282,16 @@ class PengajuanController extends Controller
                 throw new \Exception('Rekomendasi status tidak valid.');
             }
 
-            $pointPengajuan = PointPengajuan::create([
-                'pengajuan_id' => $request->pengajuan_id,
-                'user_id' => Auth::id(),
-                'role' => 'admin',
-                'poin_wawancara' => $request->poin_wawancara,
-            ]);
+            $pointPengajuan = PointPengajuan::updateOrCreate(
+                [
+                    'pengajuan_id' => $request->pengajuan_id,
+                    'user_id' => Auth::id(),
+                    'role' => 'admin',
+                ],
+                [
+                    'poin_wawancara' => $request->poin_wawancara,
+                ]
+            );
 
             if ($status === 'disarankan_cicilan') {
                 $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
@@ -295,16 +299,20 @@ class PengajuanController extends Controller
                 $uktBaru = (int) $request->rekomendasi_ukt;
             }
 
-            HasilValidasi::create([
-                'pengajuan_id' => $request->pengajuan_id,
-                'user_id' => Auth::id(),
-                'catatan' => '-',
-                'hasil_wawancara' => $request->hasil_wawancara ?? '-',
-                'hasil_score' => 0,
-                'rekomendasi_ukt' => $uktBaru,
-                'status' => $status,
-                'berlaku_selama' => $berlakuSelama,
-            ]);
+            HasilValidasi::updateOrCreate(
+                [
+                    'pengajuan_id' => $request->pengajuan_id,
+                    'user_id' => Auth::id(),
+                ],
+                [
+                    'catatan' => '-',
+                    'hasil_wawancara' => $request->hasil_wawancara ?? '-',
+                    'hasil_score' => 0,
+                    'rekomendasi_ukt' => $uktBaru,
+                    'status' => $status,
+                    'berlaku_selama' => $berlakuSelama,
+                ]
+            );
 
             $pengajuan->update(['status' => 'dinilai_admin']);
 
@@ -353,12 +361,16 @@ class PengajuanController extends Controller
                 throw new \Exception('Rekomendasi status tidak valid.');
             }
 
-            $pointPengajuan = PointPengajuan::create([
-                'pengajuan_id' => $request->pengajuan_id,
-                'user_id' => Auth::id(),
-                'role' => 'keuangan',
-                'poin_wawancara' => $request->poin_wawancara,
-            ]);
+            $pointPengajuan = PointPengajuan::updateOrCreate(
+                [
+                    'pengajuan_id' => $request->pengajuan_id,
+                    'user_id' => Auth::id(),
+                    'role' => 'keuangan',
+                ],
+                [
+                    'poin_wawancara' => $request->poin_wawancara,
+                ]
+            );
 
             if ($status === 'disarankan_cicilan') {
                 $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
@@ -366,16 +378,20 @@ class PengajuanController extends Controller
                 $uktBaru = (int) $request->rekomendasi_ukt;
             }
 
-            HasilValidasi::create([
-                'pengajuan_id' => $request->pengajuan_id,
-                'user_id' => Auth::id(),
-                'catatan' => '-',
-                'hasil_wawancara' => $request->hasil_wawancara ?? '-',
-                'hasil_score' => 0,
-                'rekomendasi_ukt' => $uktBaru,
-                'status' => $status,
-                'berlaku_selama' => $berlakuSelama,
-            ]);
+            HasilValidasi::updateOrCreate(
+                [
+                    'pengajuan_id' => $request->pengajuan_id,
+                    'user_id' => Auth::id(),
+                ],
+                [
+                    'catatan' => '-',
+                    'hasil_wawancara' => $request->hasil_wawancara ?? '-',
+                    'hasil_score' => 0,
+                    'rekomendasi_ukt' => $uktBaru,
+                    'status' => $status,
+                    'berlaku_selama' => $berlakuSelama,
+                ]
+            );
 
             $pengajuan->update(['status' => 'dinilai_keuangan']);
 
