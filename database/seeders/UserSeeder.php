@@ -77,5 +77,26 @@ class UserSeeder extends Seeder
                 ]);
             }
         }
+
+        // Seed a default student profile for Mahasiswa Demo
+        $mahasiswaUser = DB::table('users')->where('email', 'mahasiswa@example.com')->first();
+        $prodiId = DB::table('prodi')->where('nama', 'Sarjana Terapan Teknologi Rekayasa Perangkat Lunak')->value('id') 
+                   ?? DB::table('prodi')->first()->id;
+
+        if ($mahasiswaUser && $prodiId) {
+            DB::table('mahasiswa')->insert([
+                'user_id' => $mahasiswaUser->id,
+                'nim' => '220101001',
+                'nama_lengkap' => 'Mahasiswa Demo',
+                'prodi_id' => $prodiId,
+                'jalur_masuk' => 'SBMPTN',
+                'no_hp' => '081234567890',
+                'semester_saat_ini' => 3,
+                'ukt_awal' => 3000000,
+                'piutang_semester_lalu' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }

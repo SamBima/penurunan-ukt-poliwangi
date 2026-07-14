@@ -122,7 +122,7 @@ class AuthController extends Controller
             ]
         );
 
-        return redirect()->route('profile')->with('success', 'Profil berhasil disimpan');
+        return redirect()->route('dashboard')->with('success', 'Profil berhasil disimpan');
     }
 
     public function updatePassword(Request $request)
