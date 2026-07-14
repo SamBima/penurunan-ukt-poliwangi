@@ -216,8 +216,22 @@
                                             min="0" max="100"
                                             value="{{ old('poin_kondisi_rumah', $existingPoint->poin_kondisi_rumah ?? 0) }}"
                                             placeholder="0 - 100"
-                                            oninput="hitungTotalPoin()">
+                                            oninput="resetVerifikasiRumah()">
                                         <small class="text-muted">Nilai manual dari inspeksi foto rumah</small>
+                                        <div class="mt-2">
+                                            <button type="button"
+                                                id="btn_nilai_rumah"
+                                                class="btn btn-warning btn-sm btn-block font-weight-bold"
+                                                onclick="verifikasiNilaiRumah()">
+                                                <i class="fas fa-check-square"></i> Nilai
+                                            </button>
+                                            <div id="verifikasi_rumah_status" class="mt-1" style="display:none;">
+                                                <small class="text-success font-weight-bold">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    Skor <strong id="verifikasi_skor_text">0</strong> telah diverifikasi &amp; terjumlah otomatis.
+                                                </small>
+                                            </div>
+                                        </div>
                                     </div>
                                     @endif
                                 </div>
@@ -521,6 +535,7 @@
 @push('scripts')
 <script>
     const TOTAL_NILAI_SISTEM = {{ $totalNilaiSistem }};
+    let sudahDiverifikasi = false;
 
     function hitungTotalPoin() {
         const inputRumah = document.getElementById('poin_kondisi_rumah');
@@ -541,9 +556,80 @@
         }
     }
 
+    function verifikasiNilaiRumah() {
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        const btnNilai = document.getElementById('btn_nilai_rumah');
+        const statusDiv = document.getElementById('verifikasi_rumah_status');
+        const skorText = document.getElementById('verifikasi_skor_text');
+
+        if (!inputRumah) return;
+
+        let skor = parseInt(inputRumah.value) || 0;
+        if (skor < 0) { skor = 0; inputRumah.value = 0; }
+        if (skor > 100) { skor = 100; inputRumah.value = 100; }
+
+        // Update total
+        hitungTotalPoin();
+
+        // Tampilkan status verifikasi
+        if (statusDiv) {
+            statusDiv.style.display = 'block';
+        }
+        if (skorText) {
+            skorText.textContent = skor;
+        }
+
+        // Ubah tampilan tombol jadi verified
+        if (btnNilai) {
+            btnNilai.classList.remove('btn-warning');
+            btnNilai.classList.add('btn-success');
+            btnNilai.innerHTML = '<i class="fas fa-check-double"></i> Terverifikasi';
+            btnNilai.disabled = true;
+        }
+
+        // Lock input supaya tidak berubah sembarangan
+        inputRumah.style.border = '2px solid #28a745';
+        sudahDiverifikasi = true;
+    }
+
+    function resetVerifikasiRumah() {
+        const btnNilai = document.getElementById('btn_nilai_rumah');
+        const statusDiv = document.getElementById('verifikasi_rumah_status');
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+
+        // Reset tombol
+        if (btnNilai && sudahDiverifikasi) {
+            btnNilai.classList.remove('btn-success');
+            btnNilai.classList.add('btn-warning');
+            btnNilai.innerHTML = '<i class="fas fa-check-square"></i> Nilai';
+            btnNilai.disabled = false;
+        }
+
+        // Sembunyikan status
+        if (statusDiv) {
+            statusDiv.style.display = 'none';
+        }
+
+        // Reset border
+        if (inputRumah) {
+            inputRumah.style.border = '';
+        }
+
+        sudahDiverifikasi = false;
+
+        // Tetap hitung total meski belum diverifikasi
+        hitungTotalPoin();
+    }
+
     // Jalankan sekali saat halaman dimuat untuk sinkronisasi awal
     document.addEventListener('DOMContentLoaded', function () {
         hitungTotalPoin();
+
+        // Jika sudah ada nilai tersimpan sebelumnya, auto-verifikasi
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        if (inputRumah && parseInt(inputRumah.value) > 0) {
+            verifikasiNilaiRumah();
+        }
     });
 </script>
 @endpush
