@@ -110,6 +110,7 @@
                                     <option value="{{ $n }}" {{ old('jumlah_tanggungan') !== null && old('jumlah_tanggungan') == $n ? 'selected' : '' }}>{{ $n }}</option>
                                 @endfor
                             </select>
+                            <small class="form-text text-muted">*(total anggota keluarga)</small>
                             @error('jumlah_tanggungan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
