@@ -261,13 +261,18 @@ class PengajuanController extends Controller
         try {
             DB::beginTransaction();
 
-            $pengajuan = PengajuanPenurunanUkt::with('mahasiswa')->findOrFail($request->pengajuan_id);
+            $pengajuan = PengajuanPenurunanUkt::with('mahasiswa.prodi')->findOrFail($request->pengajuan_id);
 
             if ($pengajuan->kode !== $kode) {
                 throw new \Exception('Kode pengajuan tidak sesuai');
             }
 
             $this->validateAccess($pengajuan, 'admin');
+
+            $user = Auth::user();
+            if ($user->jurusan_id && $pengajuan->mahasiswa->prodi->jurusan_id !== $user->jurusan_id) {
+                throw new \Exception('Anda tidak memiliki akses untuk menilai pengajuan dari jurusan lain.');
+            }
 
             $pointPengajuan = PointPengajuan::create([
                 'pengajuan_id' => $request->pengajuan_id,
@@ -543,7 +548,7 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi.jurusan']);
 
         // Tentukan status yang bisa dilihat berdasarkan role
         $allowedStatuses = [];
@@ -551,6 +556,11 @@ class PengajuanController extends Controller
             $allowedStatuses = ['diajukan', 'dinilai_admin'];
         } elseif ($role === 'admin') {
             $allowedStatuses = ['diterima_keuangan'];
+            if ($user->jurusan_id) {
+                $query->whereHas('mahasiswa.prodi', function($q) use ($user) {
+                    $q->where('jurusan_id', $user->jurusan_id);
+                });
+            }
         } elseif ($role === 'wadir') {
             $allowedStatuses = ['dinilai_keuangan'];
         }
@@ -628,12 +638,17 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
 
-        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi.jurusan']);
 
         // Tentukan status arsip berdasarkan role
         if ($role === 'admin') {
             // Untuk Admin (Kajur): data yang sudah divalidasi oleh admin (dinilai_admin, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+            if ($user->jurusan_id) {
+                $query->whereHas('mahasiswa.prodi', function($q) use ($user) {
+                    $q->where('jurusan_id', $user->jurusan_id);
+                });
+            }
         } elseif ($role === 'keuangan') {
             // Untuk Keuangan: data yang sudah divalidasi oleh keuangan (diterima_keuangan, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];

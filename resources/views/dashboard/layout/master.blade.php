@@ -18,6 +18,72 @@
 
     <link href="{{ url('assets/dashboard/css/sb-admin-2.min.css') }}" rel="stylesheet">
 
+    <style>
+        body {
+            background-color: #f1f5f9 !important;
+            color: #334155;
+        }
+        #content-wrapper {
+            background-color: #f1f5f9 !important;
+        }
+        .sidebar-light .nav-item .nav-link {
+            color: #475569 !important;
+            font-weight: 500;
+            padding: 12px 20px !important;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-light .nav-item .nav-link i {
+            color: #94a3b8 !important;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .sidebar-light .nav-item.active .nav-link {
+            color: #0284c7 !important;
+            background-color: #f0f9ff !important;
+            font-weight: 600;
+            border-left: 4px solid #0284c7;
+        }
+        .sidebar-light .nav-item.active .nav-link i {
+            color: #0284c7 !important;
+        }
+        .card {
+            border: none !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        .table {
+            color: #334155 !important;
+            margin-bottom: 0 !important;
+        }
+        .table thead th {
+            background-color: #2b7cb6 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            border: none !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 14px 16px !important;
+        }
+        .table tbody td {
+            padding: 14px 16px !important;
+            vertical-align: middle !important;
+            border-top: none !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            font-size: 14px;
+        }
+        .table-responsive {
+            border: none !important;
+        }
+    </style>
+
     @stack('style')
 </head>
 

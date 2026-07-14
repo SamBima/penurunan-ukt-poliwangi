@@ -1,13 +1,24 @@
 @extends('dashboard.layout.master')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+<!-- Light blue page header -->
+<div style="background-color: #badefc; padding: 20px 24px 30px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-top: -1px;">
+    <h1 style="color: #0b1a30; font-weight: 700; font-size: 26px; margin: 0 0 16px 0; font-family: 'Inter', sans-serif;">Dashboard</h1>
+    
+    <div class="d-flex align-items-center flex-wrap" style="font-size: 14px; color: #1e293b; font-weight: 600;">
+        <span class="mr-2">Filter Berdasarkan Unit:</span>
+        <select class="form-control d-inline-block" style="width: auto; max-width: 320px; height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #334155; font-weight: 500;">
+            <option>Bagian Umum dan Keuangan - BMN</option>
+            <option>Jurusan Teknik Informatika</option>
+            <option>Jurusan Teknik Sipil</option>
+            <option>Jurusan Teknik Mesin</option>
+        </select>
     </div>
+</div>
 
+<div class="container-fluid py-4" style="background-color: #f1f5f9;">
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 8px;">
             {{ session('success') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -16,340 +27,193 @@
     @endif
 
     <div class="row mb-4">
-        @if($role === 'mahasiswa')
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengajuan</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_pengajuan'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
+        <!-- Left Column: Main Card -->
+        <div class="col-xl-4 col-md-5 mb-4">
+            <div class="card h-100" style="background: #ffffff; border-radius: 8px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 24px 20px;">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center text-center h-100">
+                    <div style="background-color: #f0f9ff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        @if($role === 'keuangan')
+                            <i class="fas fa-file-contract" style="color: #0284c7; font-size: 28px;"></i>
+                        @else
+                            <i class="fas fa-exclamation-triangle" style="color: #0284c7; font-size: 28px;"></i>
+                        @endif
                     </div>
+                    @if($role === 'keuangan')
+                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total SK</div>
+                        <div style="color: #0b1a30; font-size: 26px; font-weight: 700;">{{ $stats['total_sk'] }} SK</div>
+                    @else
+                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total Pengajuan</div>
+                        <div style="color: #0b1a30; font-size: 26px; font-weight: 700;">{{ $stats['total_pengajuan'] }} Pengajuan</div>
+                    @endif
                 </div>
             </div>
+        </div>
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Sedang Diproses</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pengajuan_diproses'] }}</div>
+        <!-- Right Column: Status Summary Card -->
+        <div class="col-xl-8 col-md-7 mb-4">
+            <div class="card h-100" style="background: #ffffff; border-radius: 8px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 24px 20px;">
+                <div class="card-body">
+                    @if($role === 'mahasiswa')
+                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Pengajuan</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #ef4444; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Ditolak</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['pengajuan_ditolak'] }} Pengajuan</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-auto">
-                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sedang Diproses</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['pengajuan_diproses'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Disetujui</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['pengajuan_disetujui'] }} Pengajuan</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @elseif($role === 'admin')
+                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Penilaian</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Belum Dinilai</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['belum_dinilai'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Dinilai</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_dinilai'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif($role === 'keuangan')
+                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Pengajuan</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Belum Dinilai</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['belum_dinilai'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Dinilai</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_dinilai'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #3b82f6; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Menunggu Validasi</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['menunggu_validasi'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @elseif($role === 'wadir')
+                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Keputusan</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Menunggu Keputusan</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['menunggu_keputusan'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
+                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Diputuskan</div>
+                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_diputuskan'] }} Pengajuan</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Disetujui</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pengajuan_disetujui'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-danger shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Ditolak</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pengajuan_ditolak'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-times-circle fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        @elseif($role === 'admin')
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Belum Dinilai</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['belum_dinilai'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Sudah Dinilai</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['sudah_dinilai'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengajuan</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_pengajuan'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($role === 'keuangan')
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Menunggu Validasi</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['menunggu_validasi'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Belum Dinilai</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['belum_dinilai'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-clock fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Sudah Dinilai</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['sudah_dinilai'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total SK</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_sk'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-file-contract fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($role === 'wadir')
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Menunggu Keputusan</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['menunggu_keputusan'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-gavel fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Sudah Diputuskan</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['sudah_diputuskan'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-check-double fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengajuan</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_pengajuan'] }}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- SK Penurunan Table -->
+    <h2 style="font-size: 20px; font-weight: 700; color: #0b1a30; margin: 32px 0 16px 0; font-family: 'Inter', sans-serif;">SK Penurunan UKT</h2>
+    <div class="card mb-4" style="background: #ffffff; border-radius: 8px; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 24px;">
+        @if(in_array($role, ['keuangan']))
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ route('sk.create') }}" class="btn btn-sm btn-success" style="background-color: #22c55e; border: none; border-radius: 4px; padding: 6px 16px; font-size: 13px; font-weight: 600;">
+                    <i class="fas fa-plus mr-1"></i> Tambah SK
+                </a>
             </div>
         @endif
-    </div>
-
-    <!-- <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Keputusan Wadir Terbaru</h6> -->
-        <!-- </div>
-        <div class="card-body">
-            @if($keputusanTerbaru->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
+        
+        @if($skTerbaru->count() > 0)
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nomor SK</th>
+                            <th>Judul</th>
+                            <th>Tahun</th>
+                            <th>Tanggal Terbit</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($skTerbaru as $sk)
                             <tr>
-                                <th>Kode</th>
-                                <th>Mahasiswa</th>
-                                <th>Prodi</th>
-                                <th>Status</th>
-                                <th>UKT Rekomendasi</th>
-                                <th>Berlaku</th>
-                                <th>Tanggal</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($keputusanTerbaru as $pengajuan)
-                                @php
-                                    $validasiWadir = $pengajuan->hasilValidasi->first();
-                                @endphp
-                                <tr>
-                                    <td>{{ $pengajuan->kode }}</td>
-                                    <td>{{ $pengajuan->mahasiswa->nama }}</td>
-                                    <td>{{ $pengajuan->mahasiswa->prodi->nama ?? '-' }}</td>
-                                    <td>
-                                        @if($validasiWadir && $validasiWadir->status === 'disetujui')
-                                            <span class="badge badge-success">Disetujui</span>
-                                        @else
-                                            <span class="badge badge-warning">Disarankan Cicilan</span>
-                                        @endif
-                                    </td>
-                                    <td>Rp {{ number_format($validasiWadir->rekomendasi_ukt ?? 0, 0, ',', '.') }}</td>
-                                    <td>{{ $validasiWadir->berlaku_selama ?? '-' }}</td>
-                                    <td>{{ $pengajuan->updated_at->format('d M Y') }}</td>
-                                    <td>
-                                        <a href="{{ route('list-pengajuan.show', $pengajuan->kode) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i> Detail
+                                <td style="font-weight: 600; color: #1e293b;">{{ $sk->nomor_sk }}</td>
+                                <td>{{ $sk->judul }}</td>
+                                <td>{{ $sk->tahun }}</td>
+                                <td>{{ $sk->tanggal_terbit->format('d M Y') }}</td>
+                                <td>
+                                    <a href="{{ route('sk.download', $sk->id) }}" class="btn btn-sm btn-primary" style="background-color: #0284c7; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600;" target="_blank">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </a>
+                                    @if(in_array($role, ['keuangan']))
+                                        <a href="{{ route('sk.edit', $sk->id) }}" class="btn btn-sm btn-warning" style="background-color: #f59e0b; border: none; border-radius: 4px; padding: 6px 10px; font-size: 12px; margin-left: 4px;">
+                                            <i class="fas fa-edit"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-center text-muted mb-0">Belum ada keputusan Wadir.</p>
-            @endif
-        </div>
-    </div> -->
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">SK Penurunan UKT</h6>
-            <div>
-                @if(in_array($role, ['keuangan']))
-                    <a href="{{ route('sk.create') }}" class="btn btn-sm btn-success mr-2">
-                        <i class="fas fa-plus"></i> Tambah SK
-                    </a>
-                @endif
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="card-body">
-            @if($skTerbaru->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Nomor SK</th>
-                                <th>Judul</th>
-                                <th>Tahun</th>
-                                <th>Tanggal Terbit</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($skTerbaru as $sk)
-                                <tr>
-                                    <td>{{ $sk->nomor_sk }}</td>
-                                    <td>{{ $sk->judul }}</td>
-                                    <td>{{ $sk->tahun }}</td>
-                                    <td>{{ $sk->tanggal_terbit->format('d M Y') }}</td>
-                                    <td>
-                                        <a href="{{ route('sk.download', $sk->id) }}" class="btn btn-sm btn-primary" target="_blank">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
-                                        @if(in_array($role, ['keuangan']))
-                                            <a href="{{ route('sk.edit', $sk->id) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-center text-muted mb-0">Belum ada SK yang diupload.</p>
-            @endif
-        </div>
+        @else
+            <p class="text-center text-muted py-4 mb-0">Belum ada SK yang diupload.</p>
+        @endif
     </div>
-
 </div>
 @endsection
+

@@ -69,9 +69,15 @@ class DashboardController extends Controller
                 ->where('status', 'ditolak')
                 ->count();
         } elseif ($role === 'admin') {
-            $stats['belum_dinilai'] = PengajuanPenurunanUkt::where('status', 'diterima_keuangan')->count();
-            $stats['sudah_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();
-            $stats['total_pengajuan'] = PengajuanPenurunanUkt::whereIn('status', ['diterima_keuangan', 'dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir'])->count();
+            $queryBase = PengajuanPenurunanUkt::query();
+            if ($user->jurusan_id) {
+                $queryBase->whereHas('mahasiswa.prodi', function($q) use ($user) {
+                    $q->where('jurusan_id', $user->jurusan_id);
+                });
+            }
+            $stats['belum_dinilai'] = (clone $queryBase)->where('status', 'diterima_keuangan')->count();
+            $stats['sudah_dinilai'] = (clone $queryBase)->where('status', 'dinilai_admin')->count();
+            $stats['total_pengajuan'] = (clone $queryBase)->whereIn('status', ['diterima_keuangan', 'dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir'])->count();
         } elseif ($role === 'keuangan') {
             $stats['menunggu_validasi'] = PengajuanPenurunanUkt::where('status', 'diajukan')->count();
             $stats['belum_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();

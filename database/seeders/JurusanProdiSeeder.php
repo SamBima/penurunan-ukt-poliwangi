@@ -10,33 +10,33 @@ class JurusanProdiSeeder extends Seeder
     public function run(): void
     {
         $jurusanProdi = [
-            'Bisnis dan Informatika' => [
-                'Teknologi Rekayasa Perangkat Lunak',
-                'Teknologi Rekayasa Manufaktur',
-                'Bisnis Digital',
+            'Jurusan Bisnis & Informatika' => [
+                'Sarjana Terapan Teknologi Rekayasa Perangkat Lunak',
+                'Sarjana Terapan Bisnis Digital',
+                'Sarjana Terapan Teknologi Rekayasa Komputer',
             ],
-            'Manajemen Pariwisata' => [
-                'Manajemen Bisnis Pariwisata',
-                'Pengelolaan Perhotelan',
-                'Destinasi Pariwisata',
+            'Jurusan Pariwisata' => [
+                'Sarjana Terapan Manajemen Bisnis Pariwisata',
+                'Sarjana Terapan Destinasi Pariwisata',
+                'Sarjana Terapan Pengelolaan Perhotelan',
             ],
-            'Pertanian' => [
-                'Agribisnis',
-                'Teknologi Pengelolaan Hasil Ternak',
-                'Teknologi Akuakultur',
-                'Teknologi Produksi Ternak',
-                'Teknologi Produksi Tanaman Pangan',
-                'Pengembangan Produk Agroindustri',
+            'Jurusan Pertanian' => [
+                'Sarjana Terapan Agribisnis',
+                'Sarjana Terapan Teknologi Pengolahan Hasil Ternak',
+                'Sarjana Terapan Pengembangan Produk Agroindustri',
+                'Sarjana Terapan Teknologi Produksi Ternak',
+                'Sarjana Terapan Teknologi Produksi Tanaman Pangan',
+                'Sarjana Terapan Teknologi Budi Daya Perikanan / Teknologi Akuakultur',
             ],
-            'Mesin' => [
-                'Teknologi Rekayasa Manufaktur',
-                'Teknik Manufaktur Kapal',
+            'Jurusan Teknik Mesin' => [
+                'Sarjana Terapan Teknologi Rekayasa Manufaktur',
+                'Sarjana Terapan Teknik Manufaktur Kapal',
             ],
-            'Teknik Sipil' => [
-                'Teknik Sipil',
-                'Teknologi Rekayasa Konstruksi Jalan dan Jembatan',
-                'Teknologi Rekayasa Bangunan Gedung',
-                'Studi Manajemen Konstruksi',
+            'Jurusan Teknik Sipil' => [
+                'Diploma 3 Teknik Sipil',
+                'Sarjana Terapan Teknologi Rekayasa Konstruksi Jalan dan Jembatan',
+                'Sarjana Terapan Teknologi Rekayasa Konstruksi Bangunan Gedung',
+                'Sarjana Terapan Manajemen Konstruksi',
             ],
         ];
 
