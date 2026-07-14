@@ -22,19 +22,6 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="status">Status</label>
-                            <select class="form-control" id="status" name="status">
-                                <option value="">Semua Status</option>
-                                @foreach($statusOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
                             <label for="semester">Semester/Tahun Akademik</label>
                             <select class="form-control" id="semester" name="semester">
                                 <option value="">Semua Semester</option>

@@ -382,6 +382,138 @@
                 </div>
             </div>
             @endif
+
+            {{-- ===== CARD HASIL SAW ===== --}}
+            @php
+                $poinRumahSAW = $existingPoint->poin_kondisi_rumah ?? 0;
+
+                // Definisi kriteria: [label, nilai, max, bobot, tipe]
+                // Tipe 'cost' = poin tinggi = lebih mampu = kurang layak → normalized = (max-poin)/max
+                // Tipe 'benefit' = nilai tinggi = kondisi buruk = lebih layak → normalized = nilai/max
+                $sawCriteria = [
+                    ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
+                    ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
+                    ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
+                    ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                    ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
+                    ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                ];
+
+                $sawScore = 0;
+                foreach ($sawCriteria as &$c) {
+                    if ($c['max'] == 0) { $c['normalized'] = 0; continue; }
+                    if ($c['tipe'] === 'cost') {
+                        $c['normalized'] = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                    } else {
+                        $c['normalized'] = round($c['nilai'] / $c['max'], 4);
+                    }
+                    $c['weighted'] = round($c['normalized'] * $c['bobot'], 4);
+                    $sawScore += $c['weighted'];
+                }
+                unset($c);
+                $sawScore = round($sawScore, 4);
+                $sawPersen = round($sawScore * 100, 1);
+
+                if ($sawScore >= 0.70) {
+                    $sawLabel = 'Sangat Layak';
+                    $sawBadge = 'success';
+                    $sawIcon = 'fa-check-circle';
+                } elseif ($sawScore >= 0.50) {
+                    $sawLabel = 'Layak';
+                    $sawBadge = 'primary';
+                    $sawIcon = 'fa-thumbs-up';
+                } elseif ($sawScore >= 0.30) {
+                    $sawLabel = 'Kurang Layak';
+                    $sawBadge = 'warning';
+                    $sawIcon = 'fa-exclamation-circle';
+                } else {
+                    $sawLabel = 'Tidak Layak';
+                    $sawBadge = 'danger';
+                    $sawIcon = 'fa-times-circle';
+                }
+            @endphp
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calculator"></i> Hasil SAW
+                        <small class="text-muted font-weight-normal">(Simple Additive Weighting)</small>
+                    </h6>
+                    <span class="badge badge-{{ $sawBadge }} px-3 py-2">
+                        <i class="fas {{ $sawIcon }}"></i> {{ $sawLabel }}
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    {{-- Score Bar --}}
+                    <div class="text-center mb-3">
+                        <h3 class="font-weight-bold text-{{ $sawBadge }}">{{ $sawPersen }}%</h3>
+                        <div class="progress" style="height: 18px; border-radius: 9px;">
+                            <div class="progress-bar bg-{{ $sawBadge }} progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: {{ $sawPersen }}%;"
+                                 aria-valuenow="{{ $sawPersen }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ $sawPersen }}%
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Skor akhir SAW: <strong>{{ $sawScore }}</strong> / 1.00</small>
+                    </div>
+
+                    <hr>
+
+                    {{-- Tabel Rincian Kriteria --}}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered small">
+                            <thead class="thead-light">
+                                <tr class="text-center">
+                                    <th>Kriteria</th>
+                                    <th>Poin</th>
+                                    <th>Bobot</th>
+                                    <th>Normal.</th>
+                                    <th>Nilai Terbobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($sawCriteria as $c)
+                                <tr class="text-center">
+                                    <td class="text-left"><i class="fas {{ $c['icon'] }} text-muted mr-1"></i> {{ $c['label'] }}</td>
+                                    <td>{{ $c['nilai'] }}</td>
+                                    <td>{{ number_format($c['bobot'] * 100, 0) }}%</td>
+                                    <td>
+                                        <span class="badge badge-{{ $c['normalized'] >= 0.5 ? 'success' : ($c['normalized'] >= 0.25 ? 'warning' : 'danger') }}">
+                                            {{ number_format($c['normalized'] * 100, 1) }}%
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ number_format($c['weighted'], 4) }}</strong></td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="table-info">
+                                <tr class="text-center font-weight-bold">
+                                    <td colspan="4" class="text-right">Skor SAW Total</td>
+                                    <td>{{ $sawScore }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {{-- Skala Interpretasi --}}
+                    <div class="mt-2">
+                        <small class="text-muted"><i class="fas fa-info-circle"></i> Skala interpretasi:</small>
+                        <div class="d-flex justify-content-between mt-1 flex-wrap" style="gap:4px;">
+                            <span class="badge badge-danger px-2 py-1">< 30% — Tidak Layak</span>
+                            <span class="badge badge-warning px-2 py-1">30–49% — Kurang Layak</span>
+                            <span class="badge badge-primary px-2 py-1">50–69% — Layak</span>
+                            <span class="badge badge-success px-2 py-1">≥ 70% — Sangat Layak</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{-- ===== END CARD HASIL SAW ===== --}}
+
         </div>
     </div>
 </div>
