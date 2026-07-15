@@ -277,29 +277,6 @@
                     <h6 class="m-0 font-weight-bold text-primary">Keputusan Akhir</h6>
                 </div>
                 <div class="card-body">
-                    @php
-                        $validasiAdmin = $pengajuan->hasilValidasi->where('validator.role', 'admin')->first();
-                        $validasiKeuangan = $pengajuan->hasilValidasi->where('validator.role', 'keuangan')->first();
-                    @endphp
-
-                    @if($validasiAdmin)
-                    <div class="alert alert-success">
-                        <h6 class="font-weight-bold"><i class="fas fa-user-tie"></i> Rekomendasi UKT dari Kajur</h6>
-                        <h4 class="text-success mb-0">{{ $validasiAdmin->formatted_rekomendasi_ukt }}</h4>
-                    </div>
-                    @endif
-
-                    @if($validasiKeuangan)
-                    <div class="alert alert-info">
-                        <h6 class="font-weight-bold"><i class="fas fa-calculator"></i> Rekomendasi UKT dari Keuangan</h6>
-                        <h4 class="text-info mb-0">{{ $validasiKeuangan->formatted_rekomendasi_ukt }}</h4>
-                    </div>
-                    @endif
-
-                    <div class="alert alert-secondary">
-                        <small><strong>UKT Saat Ini:</strong> {{ $pengajuan->mahasiswa->formatted_ukt_awal }}</small>
-                    </div>
-
                     <form action="{{ route('list-pengajuan.validasi', $pengajuan->kode) }}" method="POST" id="validasiForm">
                         @csrf
                         <input type="hidden" name="pengajuan_id" value="{{ $pengajuan->id }}">
@@ -377,6 +354,91 @@
                             @endif
                         </div>
                     </div>
+
+                    @if($validasi->validator && $validasi->validator->role === 'keuangan')
+                        @php
+                            $poinRumahSAW = $poinKeuangan->poin_kondisi_rumah ?? 0;
+                            $sawCriteria = [
+                                ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
+                                ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                                ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
+                                ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                            ];
+
+                            $sawScore = 0;
+                            foreach ($sawCriteria as $c) {
+                                if ($c['max'] == 0) continue;
+                                if ($c['tipe'] === 'cost') {
+                                    $norm = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                                } else {
+                                    $norm = round($c['nilai'] / $c['max'], 4);
+                                }
+                                $sawScore += round($norm * $c['bobot'], 4);
+                            }
+                            $sawScore = round($sawScore, 4);
+                            $sawPersen = round($sawScore * 100, 1);
+
+                            if ($sawScore >= 0.70) {
+                                $sawLabel = 'Sangat Layak';
+                                $sawBadge = 'success';
+                                $sawIcon = 'fa-check-circle';
+                                $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
+                                $sawRecTariff = 'Rp 500.000';
+                            } elseif ($sawScore >= 0.50) {
+                                $sawLabel = 'Layak';
+                                $sawBadge = 'primary';
+                                $sawIcon = 'fa-thumbs-up';
+                                $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                                $sawRecTariff = 'Rp 2.000.000';
+                            } elseif ($sawScore >= 0.30) {
+                                $sawLabel = 'Kurang Layak';
+                                $sawBadge = 'warning';
+                                $sawIcon = 'fa-exclamation-circle';
+                                $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                                $sawRecTariff = 'Rp 3.000.000';
+                            } else {
+                                $sawLabel = 'Tidak Layak';
+                                $sawBadge = 'danger';
+                                $sawIcon = 'fa-times-circle';
+                                $sawRecStatus = 'UKT Tetap / diangsur';
+                                $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                            }
+                        @endphp
+                        
+                        <div class="card shadow-sm border-left-info mb-3">
+                            <div class="card-body p-3">
+                                <h6 class="font-weight-bold mb-2 text-info"><i class="fas fa-calculator text-info mr-1"></i> Rekomendasi Hasil Perhitungan SAW</h6>
+                                <div class="text-center mb-3">
+                                    <h4 class="font-weight-bold text-{{ $sawBadge }} mb-1">{{ $sawPersen }}% ({{ $sawLabel }})</h4>
+                                    <div class="progress mb-2" style="height: 12px; border-radius: 6px;">
+                                        <div class="progress-bar bg-{{ $sawBadge }} progress-bar-striped progress-bar-animated"
+                                             role="progressbar"
+                                             style="width: {{ $sawPersen }}%;"
+                                             aria-valuenow="{{ $sawPersen }}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Skor SAW: <strong>{{ $sawScore }}</strong> / 1.00</small>
+                                </div>
+                                <div class="alert alert-info py-2 px-3 mb-0 small">
+                                    <div class="row">
+                                        <div class="col-6 border-right">
+                                            <span class="text-muted d-block font-weight-bold mb-1">Rekomendasi Keputusan:</span>
+                                            <span class="font-weight-bold text-dark">{{ $sawRecStatus }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted d-block font-weight-bold mb-1">Rekomendasi Tarif UKT:</span>
+                                            <span class="font-weight-bold text-success">{{ $sawRecTariff }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     @endforeach
                 </div>
             </div>
