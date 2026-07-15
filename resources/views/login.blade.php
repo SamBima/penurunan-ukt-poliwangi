@@ -201,7 +201,7 @@
             <div class="login-header">
                 <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" class="logo-img">
                 <div class="header-text">
-                    <span class="system-subtitle">Sistem Informasi Akademik</span>
+                    <span class="system-subtitle">Sistem Penurunan Uang Kuliah Tunggal</span>
                     <h1 class="institution-title">Politeknik Negeri Banyuwangi</h1>
                 </div>
             </div>

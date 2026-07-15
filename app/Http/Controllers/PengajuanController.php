@@ -289,7 +289,13 @@ class PengajuanController extends Controller
                     'role' => 'admin',
                 ],
                 [
-                    'poin_wawancara' => $request->poin_wawancara,
+                    'poin_penghasilan_ortu' => $pengajuan->poin_total_gaji,
+                    'poin_tagihan' => $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam,
+                    'poin_kepemilikan' => $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil,
+                    'poin_kondisi_rumah' => 0,
+                    'poin_kartu_bantuan' => $pengajuan->poin_kepemilikan_kartu,
+                    'poin_pernyataan_teman' => 0,
+                    'poin_wawancara' => 0,
                 ]
             );
 
@@ -307,7 +313,7 @@ class PengajuanController extends Controller
                 [
                     'catatan' => '-',
                     'hasil_wawancara' => $request->hasil_wawancara ?? '-',
-                    'hasil_score' => 0,
+                    'hasil_score' => $pointPengajuan->total_poin,
                     'rekomendasi_ukt' => $uktBaru,
                     'status' => $status,
                     'berlaku_selama' => $berlakuSelama,
@@ -371,8 +377,16 @@ class PengajuanController extends Controller
                     'role' => 'keuangan',
                 ],
                 [
-                    'poin_wawancara' => $request->poin_wawancara,
+                    'poin_penghasilan_ortu' => $pengajuan->poin_total_gaji,
+                    'poin_tagihan' => $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam,
+                    'poin_kepemilikan' => $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil,
                     'poin_kondisi_rumah' => $poinKondisiRumah,
+                    'poin_kartu_bantuan' => $pengajuan->poin_kepemilikan_kartu,
+                    'poin_pernyataan_teman' => 0,
+                    'poin_jumlah_tanggungan' => $pengajuan->poin_jumlah_tanggungan,
+                    'poin_daya_listrik' => $pengajuan->poin_daya_listrik,
+                    'poin_pbb' => $pengajuan->poin_pbb,
+                    'poin_wawancara' => 0,
                 ]
             );
 
@@ -390,7 +404,7 @@ class PengajuanController extends Controller
                 [
                     'catatan' => '-',
                     'hasil_wawancara' => $request->hasil_wawancara ?? '-',
-                    'hasil_score' => 0,
+                    'hasil_score' => $pointPengajuan->total_poin,
                     'rekomendasi_ukt' => $uktBaru,
                     'status' => $status,
                     'berlaku_selama' => $berlakuSelama,

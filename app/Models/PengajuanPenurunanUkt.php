@@ -286,6 +286,7 @@ class PengajuanPenurunanUkt extends Model
             'tidak_ada' => 0,
             'KKS' => -10,
             'SKTM' => -5,
+            default => 0,
         };
     }
 
