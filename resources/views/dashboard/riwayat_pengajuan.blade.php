@@ -112,9 +112,9 @@
                             @php
                                 $steps = [
                                     ['key' => 'diajukan', 'label' => 'Pengajuan', 'icon' => 'file-alt'],
-                                    ['key' => 'diterima_keuangan', 'label' => 'Verifikasi Keuangan', 'icon' => 'check-circle'],
-                                    ['key' => 'dinilai_admin', 'label' => 'Divalidasi Admin', 'icon' => 'user-tie'],
-                                    ['key' => 'dinilai_keuangan', 'label' => 'Penilaian Keuangan', 'icon' => 'calculator'],
+                                    ['key' => 'diterima_keuangan', 'label' => 'Validasi Keuangan', 'icon' => 'check-circle'],
+                                    ['key' => 'dinilai_admin', 'label' => 'Dinilai Kajur (Wawancara)', 'icon' => 'user-tie'],
+                                    ['key' => 'dinilai_keuangan', 'label' => 'Dinilai Keuangan', 'icon' => 'calculator'],
                                     ['key' => 'dinilai_wadir', 'label' => 'Keputusan Wadir', 'icon' => 'gavel']
                                 ];
 
