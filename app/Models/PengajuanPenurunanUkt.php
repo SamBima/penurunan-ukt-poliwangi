@@ -92,7 +92,7 @@ class PengajuanPenurunanUkt extends Model
         $statusLabels = [
             'diajukan' => 'Diajukan Ke Keuangan',
             'diterima_keuangan' => 'Diterima Keuangan',
-            'dinilai_admin' => 'Divalidasi Admin',
+            'dinilai_admin' => 'Dinilai Admin',
             'dinilai_keuangan' => 'Dinilai Keuangan',
             'dinilai_wadir' => 'Dinilai Wadir',
             'disarankan_cicilan' => 'Disarankan Cicilan',
