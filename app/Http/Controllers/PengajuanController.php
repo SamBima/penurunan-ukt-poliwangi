@@ -783,6 +783,173 @@ class PengajuanController extends Controller
         return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions', 'isArsip'));
     }
 
+    public function bulkKeuangan(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|in:terima,tolak',
+        ]);
+
+        $action = $request->action;
+        $user = Auth::user();
+
+        // Get all pengajuan that Keuangan is allowed to validate
+        $allowedStatuses = ['diajukan', 'dinilai_admin'];
+        $pengajuans = PengajuanPenurunanUkt::with('mahasiswa')
+            ->whereIn('status', $allowedStatuses)
+            ->get();
+
+        if ($pengajuans->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada pengajuan yang dapat divalidasi saat ini.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $count = 0;
+            foreach ($pengajuans as $pengajuan) {
+                if ($action === 'terima') {
+                    // 1. Calculate SAW score
+                    $poinRumahSAW = 0; // bulk default
+                    $sawCriteria = [
+                        ['nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
+                        ['nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
+                        ['nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                    ];
+
+                    $sawScore = 0;
+                    foreach ($sawCriteria as $c) {
+                        if ($c['max'] == 0) continue;
+                        if ($c['tipe'] === 'cost') {
+                            $norm = ($c['max'] - $c['nilai']) / $c['max'];
+                        } else {
+                            $norm = $c['nilai'] / $c['max'];
+                        }
+                        $sawScore += $norm * $c['bobot'];
+                    }
+
+                    // Determine recommendation based on SAW score
+                    if ($sawScore >= 0.70) {
+                        $status = 'disetujui';
+                        $berlakuSelama = 'Sampai Lulus';
+                        $uktBaru = 500000;
+                    } elseif ($sawScore >= 0.50) {
+                        $status = 'disetujui';
+                        $berlakuSelama = '2 Semester';
+                        $uktBaru = 2000000;
+                    } elseif ($sawScore >= 0.30) {
+                        $status = 'disetujui';
+                        $berlakuSelama = '1 Semester';
+                        $uktBaru = 3000000;
+                    } else {
+                        $status = 'disarankan_cicilan';
+                        $berlakuSelama = '1 Semester';
+                        $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+                    }
+
+                    // Create/update PointPengajuan
+                    $pointPengajuan = PointPengajuan::updateOrCreate(
+                        [
+                            'pengajuan_id' => $pengajuan->id,
+                            'user_id' => $user->id,
+                            'role' => 'keuangan',
+                        ],
+                        [
+                            'poin_penghasilan_ortu' => $pengajuan->poin_total_gaji,
+                            'poin_tagihan' => $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam,
+                            'poin_kepemilikan' => $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil,
+                            'poin_kondisi_rumah' => 0,
+                            'poin_kartu_bantuan' => $pengajuan->poin_kepemilikan_kartu,
+                            'poin_pernyataan_teman' => 0,
+                            'poin_jumlah_tanggungan' => $pengajuan->poin_jumlah_tanggungan,
+                            'poin_daya_listrik' => $pengajuan->poin_daya_listrik,
+                            'poin_pbb' => $pengajuan->poin_pbb,
+                            'poin_wawancara' => 0,
+                        ]
+                    );
+
+                    // Create/update HasilValidasi
+                    HasilValidasi::updateOrCreate(
+                        [
+                            'pengajuan_id' => $pengajuan->id,
+                            'user_id' => $user->id,
+                        ],
+                        [
+                            'catatan' => '-',
+                            'hasil_wawancara' => '-',
+                            'hasil_score' => $pointPengajuan->total_poin,
+                            'rekomendasi_ukt' => $uktBaru,
+                            'status' => $status,
+                            'berlaku_selama' => $berlakuSelama,
+                        ]
+                    );
+
+                } else {
+                    // Tolak Semua
+                    $status = 'disarankan_cicilan';
+                    $berlakuSelama = '1 Semester';
+                    $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+
+                    $pointPengajuan = PointPengajuan::updateOrCreate(
+                        [
+                            'pengajuan_id' => $pengajuan->id,
+                            'user_id' => $user->id,
+                            'role' => 'keuangan',
+                        ],
+                        [
+                            'poin_penghasilan_ortu' => $pengajuan->poin_total_gaji,
+                            'poin_tagihan' => $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam,
+                            'poin_kepemilikan' => $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil,
+                            'poin_kondisi_rumah' => 0,
+                            'poin_kartu_bantuan' => $pengajuan->poin_kepemilikan_kartu,
+                            'poin_pernyataan_teman' => 0,
+                            'poin_jumlah_tanggungan' => $pengajuan->poin_jumlah_tanggungan,
+                            'poin_daya_listrik' => $pengajuan->poin_daya_listrik,
+                            'poin_pbb' => $pengajuan->poin_pbb,
+                            'poin_wawancara' => 0,
+                        ]
+                    );
+
+                    HasilValidasi::updateOrCreate(
+                        [
+                            'pengajuan_id' => $pengajuan->id,
+                            'user_id' => $user->id,
+                        ],
+                        [
+                            'catatan' => '-',
+                            'hasil_wawancara' => '-',
+                            'hasil_score' => $pointPengajuan->total_poin,
+                            'rekomendasi_ukt' => $uktBaru,
+                            'status' => $status,
+                            'berlaku_selama' => $berlakuSelama,
+                        ]
+                    );
+                }
+
+                // Update status pengajuan
+                $pengajuan->update(['status' => 'dinilai_keuangan']);
+                $count++;
+            }
+
+            DB::commit();
+
+            $message = $action === 'terima'
+                ? "Berhasil menyetujui {$count} pengajuan secara massal dengan rekomendasi SAW!"
+                : "Berhasil menolak (UKT tetap) {$count} pengajuan secara massal!";
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses data secara massal: ' . $e->getMessage());
+        }
+    }
+
     public function riwayat(Request $request)
     {
         $query = PengajuanPenurunanUkt::with([

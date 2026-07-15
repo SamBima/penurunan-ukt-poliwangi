@@ -54,11 +54,23 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary">Data Pengajuan Penurunan UKT</h6>
-            <div class="dropdown no-arrow">
-                <span class="text-muted">
+            <div class="d-flex align-items-center">
+                <span class="text-muted mr-3">
                     Menampilkan {{ $pengajuan->firstItem() }} - {{ $pengajuan->lastItem() }}
                     dari {{ $pengajuan->total() }} data
                 </span>
+                @if(Auth::user()->role === 'keuangan' && !(isset($isArsip) && $isArsip))
+                <form action="{{ route('list-pengajuan.bulk-keuangan') }}" method="POST" class="d-inline mb-0" id="bulkForm">
+                    @csrf
+                    <input type="hidden" name="action" id="bulkAction" value="">
+                    <button type="button" class="btn btn-sm btn-success mr-2 font-weight-bold" onclick="confirmBulk('terima')">
+                        <i class="fas fa-check-double"></i> Terima Semua
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger font-weight-bold" onclick="confirmBulk('tolak')">
+                        <i class="fas fa-times-circle"></i> Tolak Semua
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
         <div class="card-body">
@@ -331,4 +343,16 @@
     border-color: #dee2e6;
 }
 </style>
+
+@if(Auth::user()->role === 'keuangan')
+<script>
+function confirmBulk(action) {
+    const actionLabel = action === 'terima' ? 'menerima (menyetujui dengan rekomendasi)' : 'menolak';
+    if (confirm(`Apakah Anda yakin ingin ${actionLabel} semua pengajuan yang belum dinilai?`)) {
+        document.getElementById('bulkAction').value = action;
+        document.getElementById('bulkForm').submit();
+    }
+}
+</script>
+@endif
 @endsection
