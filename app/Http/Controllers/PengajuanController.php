@@ -573,6 +573,14 @@ class PengajuanController extends Controller
         ])->where('kode', $kode)->firstOrFail();
 
         $role = Auth::user()->role;
+        $user = Auth::user();
+
+        // Validasi akses jurusan untuk admin (Kajur)
+        if ($role === 'admin' && $user->jurusan_id) {
+            if ($pengajuan->mahasiswa->prodi->jurusan_id !== $user->jurusan_id) {
+                abort(403, 'Anda tidak memiliki akses ke pengajuan dari prodi/jurusan ini.');
+            }
+        }
 
         $existingPoint = PointPengajuan::where('pengajuan_id', $pengajuan->id)
             ->where('user_id', Auth::id())
@@ -616,6 +624,13 @@ class PengajuanController extends Controller
         $role = $user->role;
         
         $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+
+        // Filter by admin's jurusan_id
+        if ($role === 'admin' && $user->jurusan_id) {
+            $query->whereHas('mahasiswa.prodi', function ($q) use ($user) {
+                $q->where('jurusan_id', $user->jurusan_id);
+            });
+        }
 
         // Tentukan status yang bisa dilihat berdasarkan role
         $allowedStatuses = [];
@@ -701,6 +716,13 @@ class PengajuanController extends Controller
         $role = $user->role;
 
         $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+
+        // Filter by admin's jurusan_id for archives
+        if ($role === 'admin' && $user->jurusan_id) {
+            $query->whereHas('mahasiswa.prodi', function ($q) use ($user) {
+                $q->where('jurusan_id', $user->jurusan_id);
+            });
+        }
 
         // Tentukan status arsip berdasarkan role
         if ($role === 'admin') {
