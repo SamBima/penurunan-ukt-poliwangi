@@ -216,59 +216,6 @@
                 </div>
             </div>
 
-            @if($poinAdmin)
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-success text-white">
-                    <h6 class="m-0 font-weight-bold">Penilaian Kajur</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Penghasilan Orang Tua:</strong> {{ $poinAdmin->poin_penghasilan_ortu }} poin</p>
-                            <p class="mb-1"><strong>Tagihan Bulanan:</strong> {{ $poinAdmin->poin_tagihan }} poin</p>
-                            <p class="mb-1"><strong>Kepemilikan Kendaraan:</strong> {{ $poinAdmin->poin_kepemilikan }} poin</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Kondisi Rumah:</strong> {{ $poinAdmin->poin_kondisi_rumah }} poin</p>
-                            <p class="mb-1"><strong>Kartu Bantuan:</strong> {{ $poinAdmin->poin_kartu_bantuan }} poin</p>
-                            <p class="mb-1"><strong>Pernyataan Teman:</strong> {{ $poinAdmin->poin_pernyataan_teman }} poin</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <h5 class="text-success"><strong>Total Poin Kajur: {{ $poinAdmin->total_poin }}</strong></h5>
-                    <small class="text-muted">Dinilai oleh: {{ $poinAdmin->user->name }} pada {{ $poinAdmin->created_at->format('d M Y H:i') }}</small>
-                </div>
-            </div>
-            @endif
-
-            @if($poinKeuangan)
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">Penilaian Keuangan</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Penghasilan Orang Tua:</strong> {{ $poinKeuangan->poin_penghasilan_ortu }} poin</p>
-                            <p class="mb-1"><strong>Tagihan Bulanan:</strong> {{ $poinKeuangan->poin_tagihan }} poin</p>
-                            <p class="mb-1"><strong>Kepemilikan Kendaraan:</strong> {{ $poinKeuangan->poin_kepemilikan }} poin</p>
-                            <p class="mb-1"><strong>Kondisi Rumah:</strong> {{ $poinKeuangan->poin_kondisi_rumah }} poin</p>
-                            <p class="mb-1"><strong>Kartu Bantuan:</strong> {{ $poinKeuangan->poin_kartu_bantuan }} poin</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Pernyataan Teman:</strong> {{ $poinKeuangan->poin_pernyataan_teman }} poin</p>
-                            <p class="mb-1"><strong>Jumlah Tanggungan:</strong> {{ $poinKeuangan->poin_jumlah_tanggungan }} poin</p>
-                            <p class="mb-1"><strong>Daya Listrik:</strong> {{ $poinKeuangan->poin_daya_listrik }} poin</p>
-                            <p class="mb-1"><strong>PBB:</strong> {{ $poinKeuangan->poin_pbb }} poin</p>
-                            <p class="mb-1"><strong>Wawancara:</strong> {{ $poinKeuangan->poin_wawancara }} poin</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <h5 class="text-info"><strong>Total Poin Keuangan: {{ $poinKeuangan->total_poin }}</strong></h5>
-                    <small class="text-muted">Dinilai oleh: {{ $poinKeuangan->user->name }} pada {{ $poinKeuangan->created_at->format('d M Y H:i') }}</small>
-                </div>
-            </div>
-            @endif
         </div>
 
         <div class="col-lg-4">
