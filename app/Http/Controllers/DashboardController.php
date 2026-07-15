@@ -79,28 +79,25 @@ class DashboardController extends Controller
                 });
             }
 
-            // Tentukan status untuk "Belum Dinilai" (List Pengajuan) dan "Sudah Dinilai" (Arsip)
-            $listStatuses = [];
-            $arsipStatuses = [];
+            $stats['total_sk'] = SkPenurunanUkt::count();
 
             if ($role === 'admin') {
                 $listStatuses = ['diterima_keuangan'];
                 $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+                $stats['belum_dinilai'] = (clone $queryBase)->whereIn('status', $listStatuses)->count();
+                $stats['sudah_dinilai'] = (clone $queryBase)->whereIn('status', $arsipStatuses)->count();
+                $stats['total_pengajuan'] = $stats['belum_dinilai'] + $stats['sudah_dinilai'];
             } elseif ($role === 'keuangan') {
-                $listStatuses = ['diajukan', 'dinilai_admin'];
-                $arsipStatuses = ['dinilai_keuangan'];
+                $stats['menunggu_validasi'] = (clone $queryBase)->where('status', 'diajukan')->count();
+                $stats['belum_dinilai'] = (clone $queryBase)->where('status', 'dinilai_admin')->count();
+                $stats['sudah_dinilai'] = (clone $queryBase)->where('status', 'dinilai_keuangan')->count();
+                $stats['total_pengajuan'] = (clone $queryBase)->whereIn('status', ['diajukan', 'dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'])->count();
             } elseif ($role === 'wadir') {
                 $listStatuses = ['dinilai_keuangan'];
                 $arsipStatuses = ['dinilai_wadir', 'ditolak'];
-            }
-
-            $stats['belum_dinilai'] = (clone $queryBase)->whereIn('status', $listStatuses)->count();
-            $stats['sudah_dinilai'] = (clone $queryBase)->whereIn('status', $arsipStatuses)->count();
-            $stats['total_pengajuan'] = $stats['belum_dinilai'] + $stats['sudah_dinilai'];
-            $stats['total_sk'] = SkPenurunanUkt::count();
-            
-            if ($role === 'keuangan') {
-                $stats['menunggu_validasi'] = (clone $queryBase)->where('status', 'diajukan')->count();
+                $stats['belum_dinilai'] = (clone $queryBase)->whereIn('status', $listStatuses)->count();
+                $stats['sudah_dinilai'] = (clone $queryBase)->whereIn('status', $arsipStatuses)->count();
+                $stats['total_pengajuan'] = $stats['belum_dinilai'] + $stats['sudah_dinilai'];
             }
         }
 
