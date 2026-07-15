@@ -72,6 +72,10 @@ Route::middleware(['auth'])->group(function () {
                 ->name('hasil-akhir-pengajuan')
                 ->middleware(['auth', 'checkRole:keuangan']);
 
+            Route::get('/hasil-akhir-pengajuan/cetak', [PengajuanController::class, 'cetakHasilAkhir'])
+                ->name('hasil-akhir-pengajuan.cetak')
+                ->middleware(['auth', 'checkRole:keuangan']);
+
             Route::post('/list-pengajuan/bulk-keuangan', [PengajuanController::class, 'bulkKeuangan'])
                 ->name('list-pengajuan.bulk-keuangan')
                 ->middleware(['auth', 'checkRole:keuangan']);

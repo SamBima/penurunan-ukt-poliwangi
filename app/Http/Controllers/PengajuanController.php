@@ -1046,6 +1046,55 @@ class PengajuanController extends Controller
         return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions', 'isHasilAkhir'));
     }
 
+    public function cetakHasilAkhir(Request $request)
+    {
+        $user = Auth::user();
+        
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'hasilValidasi']);
+
+        $hasilStatuses = ['dinilai_wadir', 'ditolak'];
+        
+        if ($request->filled('status') && in_array($request->status, $hasilStatuses)) {
+             $query->where('status', $request->status);
+        } else {
+             $query->whereIn('status', $hasilStatuses);
+        }
+
+        // Filter Pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                 $q->where('kode', 'like', "%{$search}%")
+                   ->orWhereHas('mahasiswa', function($m) use ($search) {
+                       $m->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nim', 'like', "%{$search}%");
+                   });
+            });
+        }
+
+        // Filter Semester
+        if ($request->filled('semester')) {
+            [$semester, $tahun] = explode('_', $request->semester);
+
+            $query->where(function ($q) use ($semester, $tahun) {
+                if ($semester === 'ganjil') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [7, 12]);
+                } elseif ($semester === 'genap') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [1, 6]);
+                }
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+        
+        // Ambil semua data tanpa pagination agar masuk semua ke PDF cetak
+        $pengajuan = $query->get();
+
+        return view('dashboard.cetak_hasil_akhir', compact('pengajuan'));
+    }
+
     public function riwayat(Request $request)
     {
         $query = PengajuanPenurunanUkt::with([

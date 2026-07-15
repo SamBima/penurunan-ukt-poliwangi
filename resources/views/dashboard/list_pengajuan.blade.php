@@ -49,16 +49,29 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-5">
                         <div class="form-group">
                             <label>&nbsp;</label>
                             <div>
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     <i class="fas fa-search"></i> Cari
                                 </button>
-                                <a href="{{ route('list-pengajuan') }}" class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-reload"></i> Reset
+                                @php
+                                    $resetUrl = route('list-pengajuan');
+                                    if (isset($isArsip) && $isArsip) {
+                                        $resetUrl = route('arsip-pengajuan');
+                                    } elseif (isset($isHasilAkhir) && $isHasilAkhir) {
+                                        $resetUrl = route('hasil-akhir-pengajuan');
+                                    }
+                                @endphp
+                                <a href="{{ $resetUrl }}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-redo"></i> Reset
                                 </a>
+                                @if(isset($isHasilAkhir) && $isHasilAkhir)
+                                    <a href="{{ route('hasil-akhir-pengajuan.cetak', request()->query()) }}" target="_blank" class="btn btn-danger btn-sm ml-2">
+                                        <i class="fas fa-file-pdf"></i> Cetak PDF
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
