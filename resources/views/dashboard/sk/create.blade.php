@@ -143,6 +143,10 @@ $(document).ready(function () {
         $(this).next('.custom-file-label').addClass('selected').html(fileName);
 
         let title = fileName.replace(/\.[^/.]+$/, "");
+        // Bersihkan separator (strip, underscore) menjadi spasi dan ubah ke Title Case
+        title = title.replace(/[_-]/g, ' ').replace(/\w\S*/g, function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
         $('#judul').val(title);
     });
 });
