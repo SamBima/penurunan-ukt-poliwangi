@@ -68,6 +68,10 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/list-pengajuan', [PengajuanController::class, 'index'])->name('list-pengajuan');
 
+            Route::get('/hasil-akhir-pengajuan', [PengajuanController::class, 'hasilAkhir'])
+                ->name('hasil-akhir-pengajuan')
+                ->middleware(['auth', 'checkRole:keuangan']);
+
             Route::post('/list-pengajuan/bulk-keuangan', [PengajuanController::class, 'bulkKeuangan'])
                 ->name('list-pengajuan.bulk-keuangan')
                 ->middleware(['auth', 'checkRole:keuangan']);

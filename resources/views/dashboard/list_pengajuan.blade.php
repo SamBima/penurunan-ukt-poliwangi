@@ -2,7 +2,15 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">{{ isset($isArsip) && $isArsip ? 'Arsip Pengajuan Penurunan UKT' : 'List Daftar Pemohon Penurunan UKT Terbaru' }}</h1>
+        <h1 class="h3 mb-0 text-gray-800">
+            @if(isset($isArsip) && $isArsip)
+                Arsip Pengajuan Penurunan UKT
+            @elseif(isset($isHasilAkhir) && $isHasilAkhir)
+                Hasil Akhir Pengajuan Penurunan UKT (Keputusan Wadir)
+            @else
+                List Daftar Pemohon Penurunan UKT Terbaru
+            @endif
+        </h1>
     </div>
 
     <div class="card shadow mb-4">
@@ -10,7 +18,15 @@
             <h6 class="m-0 font-weight-bold text-primary">Filter & Pencarian</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ isset($isArsip) && $isArsip ? route('arsip-pengajuan') : route('list-pengajuan') }}">
+            @php
+                $formAction = route('list-pengajuan');
+                if (isset($isArsip) && $isArsip) {
+                    $formAction = route('arsip-pengajuan');
+                } elseif (isset($isHasilAkhir) && $isHasilAkhir) {
+                    $formAction = route('hasil-akhir-pengajuan');
+                }
+            @endphp
+            <form method="GET" action="{{ $formAction }}">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -182,7 +198,7 @@
                                                 <i class="fas fa-times"></i> Tolak
                                             </button>
                                         </form>
-                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : 'list']) }}" 
+                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : ((isset($isHasilAkhir) && $isHasilAkhir) ? 'hasil_akhir' : 'list')]) }}" 
                                             class="btn btn-sm btn-outline-primary ml-1" 
                                             title="Lihat Detail">
                                              <i class="fas fa-eye"></i> Lihat Form & Berkas
@@ -190,7 +206,7 @@
                                     </div>
                                 @elseif($item->status !== 'diajukan' || Auth::user()->role !== 'keuangan')
                                     <div class="btn-group mb-2" role="group">
-                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : 'list']) }}"
+                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : ((isset($isHasilAkhir) && $isHasilAkhir) ? 'hasil_akhir' : 'list')]) }}"
                                            class="btn btn-sm btn-outline-primary"
                                            title="Lihat Detail">
                                             <i class="fas fa-eye"></i> Lihat Form & Berkas

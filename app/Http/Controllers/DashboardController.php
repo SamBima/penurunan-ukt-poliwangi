@@ -88,7 +88,7 @@ class DashboardController extends Controller
                 $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
             } elseif ($role === 'keuangan') {
                 $listStatuses = ['diajukan', 'dinilai_admin'];
-                $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+                $arsipStatuses = ['dinilai_keuangan'];
             } elseif ($role === 'wadir') {
                 $listStatuses = ['dinilai_keuangan'];
                 $arsipStatuses = ['dinilai_wadir', 'ditolak'];

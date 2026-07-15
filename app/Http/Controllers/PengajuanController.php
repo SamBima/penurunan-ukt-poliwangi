@@ -729,8 +729,8 @@ class PengajuanController extends Controller
             // Untuk Admin (Kajur): data yang sudah divalidasi oleh admin (dinilai_admin, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
         } elseif ($role === 'keuangan') {
-            // Untuk Keuangan: data yang sudah divalidasi oleh keuangan (diterima_keuangan, dinilai_keuangan, dinilai_wadir, ditolak)
-            $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+            // Untuk Keuangan: data yang sudah divalidasi akhir oleh keuangan tapi belum diputuskan oleh wadir
+            $arsipStatuses = ['dinilai_keuangan'];
         } else {
             // Default / Wadir
             $arsipStatuses = ['dinilai_wadir', 'ditolak'];
@@ -970,6 +970,80 @@ class PengajuanController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses data secara massal: ' . $e->getMessage());
         }
+    }
+
+    public function hasilAkhir(Request $request)
+    {
+        $user = Auth::user();
+        
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi']);
+
+        // Tampilkan hanya data yang sudah dinilai oleh wadir (dinilai_wadir, ditolak)
+        $hasilStatuses = ['dinilai_wadir', 'ditolak'];
+        
+        if ($request->filled('status') && in_array($request->status, $hasilStatuses)) {
+             $query->where('status', $request->status);
+        } else {
+             $query->whereIn('status', $hasilStatuses);
+        }
+
+        // Filter Pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                 $q->where('kode', 'like', "%{$search}%")
+                   ->orWhereHas('mahasiswa', function($m) use ($search) {
+                       $m->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nim', 'like', "%{$search}%");
+                   });
+            });
+        }
+
+        // Filter Semester
+        if ($request->filled('semester')) {
+            [$semester, $tahun] = explode('_', $request->semester);
+
+            $query->where(function ($q) use ($semester, $tahun) {
+                if ($semester === 'ganjil') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [7, 12]);
+                } elseif ($semester === 'genap') {
+                    $q->whereYear('created_at', $tahun)
+                    ->whereBetween(DB::raw('MONTH(created_at)'), [1, 6]);
+                }
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+        $pengajuan = $query->paginate(10);
+        $pengajuan->appends($request->query());
+
+        $firstPengajuan = PengajuanPenurunanUkt::orderBy('created_at', 'asc')->first();
+        $startYear = $firstPengajuan ? $firstPengajuan->created_at->year : now()->year;
+
+        $semesterOptions = [];
+        $currentYear = now()->year + 1;
+        for ($year = $startYear; $year <= $currentYear; $year++) {
+            $semesterOptions["ganjil_{$year}"] = "Ganjil {$year}/" . ($year + 1);
+            $semesterOptions["genap_{$year}"] = "Genap {$year}/" . ($year + 1);
+        }
+
+        // Buat status options
+        $statusLabels = [
+            'dinilai_wadir' => 'Selesai (Keputusan Wadir)',
+            'ditolak' => 'Ditolak',
+        ];
+
+        $statusOptions = [];
+        foreach ($hasilStatuses as $status) {
+            if (isset($statusLabels[$status])) {
+                $statusOptions[$status] = $statusLabels[$status];
+            }
+        }
+        
+        $isHasilAkhir = true;
+
+        return view('dashboard.list_pengajuan', compact('pengajuan', 'semesterOptions', 'statusOptions', 'isHasilAkhir'));
     }
 
     public function riwayat(Request $request)

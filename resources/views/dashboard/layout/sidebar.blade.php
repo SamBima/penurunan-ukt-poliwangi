@@ -44,7 +44,7 @@
     @endif
 
     @if (Auth::user()->role == 'admin' || Auth::user()->role == 'keuangan' || Auth::user()->role == 'wadir')
-        <li class="nav-item {{ (request()->is('list-pengajuan') || (request()->is('list-pengajuan/*') && request('source') != 'arsip')) ? 'active' : '' }}">
+        <li class="nav-item {{ (request()->is('list-pengajuan') || (request()->is('list-pengajuan/*') && request('source') != 'arsip' && request('source') != 'hasil_akhir')) ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('list-pengajuan') }}">
                 <i class="fas fa-fw fa-file-alt"></i>
                 <span>List Pengajuan</span>
@@ -56,6 +56,14 @@
                 <span>Arsip</span>
             </a>
         </li>
+        @if (Auth::user()->role == 'keuangan')
+        <li class="nav-item {{ (request()->is('hasil-akhir-pengajuan') || (request()->is('list-pengajuan/*') && request('source') == 'hasil_akhir')) ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('hasil-akhir-pengajuan') }}">
+                <i class="fas fa-fw fa-check-double"></i>
+                <span>Hasil Akhir</span>
+            </a>
+        </li>
+        @endif
     @endif
 
     <!-- Divider -->
