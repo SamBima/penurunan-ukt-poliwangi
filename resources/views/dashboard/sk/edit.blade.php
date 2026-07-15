@@ -37,7 +37,7 @@
                             <label for="nomor_sk">Nomor SK <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('nomor_sk') is-invalid @enderror"
                                    id="nomor_sk" name="nomor_sk" value="{{ old('nomor_sk', $sk->nomor_sk) }}"
-                                   placeholder="Contoh: SK/001/UKT/2024" required>
+                                   readonly required>
                             @error('nomor_sk')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
