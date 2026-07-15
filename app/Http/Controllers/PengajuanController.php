@@ -458,16 +458,20 @@ class PengajuanController extends Controller
                 $uktBaru = (int) $request->rekomendasi_ukt;
             }
 
-            HasilValidasi::create([
-                'pengajuan_id' => $request->pengajuan_id,
-                'user_id' => Auth::id(),
-                'catatan' => '-',
-                'hasil_wawancara' => '-',
-                'hasil_score' => 0,
-                'rekomendasi_ukt' => $uktBaru,
-                'status' => $status,
-                'berlaku_selama' => $berlakuSelama,
-            ]);
+            HasilValidasi::updateOrCreate(
+                [
+                    'pengajuan_id' => $request->pengajuan_id,
+                    'user_id' => Auth::id(),
+                ],
+                [
+                    'catatan' => '-',
+                    'hasil_wawancara' => '-',
+                    'hasil_score' => 0,
+                    'rekomendasi_ukt' => $uktBaru,
+                    'status' => $status,
+                    'berlaku_selama' => $berlakuSelama,
+                ]
+            );
 
             $pengajuan->update(['status' => 'dinilai_wadir']);
 
@@ -490,9 +494,9 @@ class PengajuanController extends Controller
     private function validateAccess($pengajuan, $role)
     {
         $allowedStatuses = [
-            'admin' => ['dinilai_admin', 'dinilai_keuangan'],
-            'keuangan' => ['dinilai_keuangan', 'dinilai_wadir'],
-            'wadir' => ['dinilai_wadir', 'disetujui', 'disarankan_cicilan', 'selesai']
+            'admin' => ['diterima_keuangan', 'dinilai_admin'],
+            'keuangan' => ['dinilai_admin', 'dinilai_keuangan'],
+            'wadir' => ['dinilai_keuangan', 'dinilai_wadir']
         ];
 
         if (!isset($allowedStatuses[$role])) {
@@ -501,14 +505,6 @@ class PengajuanController extends Controller
 
         if (!in_array($pengajuan->status, $allowedStatuses[$role])) {
             throw new \Exception('Anda tidak memiliki akses untuk memvalidasi pengajuan dengan status ini');
-        }
-
-        $existingValidation = HasilValidasi::where('pengajuan_id', $pengajuan->id)
-            ->where('user_id', Auth::id())
-            ->first();
-
-        if ($existingValidation) {
-            throw new \Exception('Anda sudah pernah memvalidasi pengajuan ini');
         }
     }
 

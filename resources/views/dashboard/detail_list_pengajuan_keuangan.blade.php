@@ -223,7 +223,7 @@
                                                 id="btn_nilai_rumah"
                                                 class="btn btn-warning btn-sm btn-block font-weight-bold"
                                                 onclick="verifikasiNilaiRumah()">
-                                                <i class="fas fa-check-square"></i> Nilai
+                                                <i class=""></i> Nilai
                                             </button>
                                             <div id="verifikasi_rumah_status" class="mt-1" style="display:none;">
                                                 <small class="text-success font-weight-bold">
