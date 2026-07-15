@@ -22,15 +22,15 @@
             <div class="card h-100" style="background: #ffffff; border-radius: 8px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 24px 20px;">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center text-center h-100">
                     <div style="background-color: #f0f9ff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-                        @if($role === 'keuangan')
-                            <i class="fas fa-file-contract" style="color: #0284c7; font-size: 28px;"></i>
+                        @if(in_array($role, ['admin', 'keuangan', 'wadir']))
+                            <i class="fas fa-exclamation-triangle" style="color: #0284c7; font-size: 28px;"></i>
                         @else
                             <i class="fas fa-exclamation-triangle" style="color: #0284c7; font-size: 28px;"></i>
                         @endif
                     </div>
-                    @if($role === 'keuangan')
-                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total SK</div>
-                        <div style="color: #0b1a30; font-size: 26px; font-weight: 700;">{{ $stats['total_sk'] }} SK</div>
+                    @if(in_array($role, ['admin', 'keuangan', 'wadir']))
+                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total Pengajuan</div>
+                        <div style="color: #0b1a30; font-size: 26px; font-weight: 700;">{{ $stats['total_pengajuan'] }} Pengajuan</div>
                     @else
                         <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total Pengajuan</div>
                         <div style="color: #0b1a30; font-size: 26px; font-weight: 700;">{{ $stats['total_pengajuan'] }} Pengajuan</div>
@@ -74,7 +74,7 @@
                                 </div>
                             </div>
                         </div>
-                    @elseif($role === 'admin')
+                    @elseif(in_array($role, ['admin', 'keuangan', 'wadir']))
                         <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Penilaian</h2>
                         <div class="row">
                             <div class="col-sm-6 mb-3">
@@ -92,59 +92,6 @@
                                     <div>
                                         <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Dinilai</div>
                                         <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_dinilai'] }} Pengajuan</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @elseif($role === 'keuangan')
-                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Pengajuan</h2>
-                        <div class="row">
-                            <div class="col-sm-6 mb-3">
-                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
-                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
-                                    <div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Belum Dinilai</div>
-                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['belum_dinilai'] }} Pengajuan</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
-                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
-                                    <div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Dinilai</div>
-                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_dinilai'] }} Pengajuan</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
-                                    <div style="width: 12px; height: 12px; background-color: #3b82f6; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
-                                    <div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Menunggu Validasi</div>
-                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['menunggu_validasi'] }} Pengajuan</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @elseif($role === 'wadir')
-                        <h2 style="color: #0284c7; font-size: 16px; font-weight: 700; margin-bottom: 20px; font-family: 'Inter', sans-serif;">Status Keputusan</h2>
-                        <div class="row">
-                            <div class="col-sm-6 mb-3">
-                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
-                                    <div style="width: 12px; height: 12px; background-color: #f97316; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
-                                    <div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Menunggu Keputusan</div>
-                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['menunggu_keputusan'] }} Pengajuan</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <div class="d-flex align-items-center p-3" style="border: 1px solid #e2e8f0; border-radius: 6px; background-color: #f8fafc;">
-                                    <div style="width: 12px; height: 12px; background-color: #22c55e; border-radius: 2px; margin-right: 12px; flex-shrink: 0;"></div>
-                                    <div>
-                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Sudah Diputuskan</div>
-                                        <div style="font-size: 13px; color: #64748b;">{{ $stats['sudah_diputuskan'] }} Pengajuan</div>
                                     </div>
                                 </div>
                             </div>

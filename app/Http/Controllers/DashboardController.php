@@ -69,25 +69,35 @@ class DashboardController extends Controller
             $stats['pengajuan_ditolak'] = PengajuanPenurunanUkt::where('mahasiswa_id', $mahasiswa->id)
                 ->where('status', 'ditolak')
                 ->count();
-        } elseif ($role === 'admin') {
+        } else {
             $queryBase = PengajuanPenurunanUkt::query();
-            if ($user->jurusan_id) {
+
+            // Filter berdasarkan jurusan jika user adalah admin (Kajur) dan terikat jurusan
+            if ($role === 'admin' && $user->jurusan_id) {
                 $queryBase->whereHas('mahasiswa.prodi', function($q) use ($user) {
                     $q->where('jurusan_id', $user->jurusan_id);
                 });
             }
-            $stats['belum_dinilai'] = (clone $queryBase)->where('status', 'diterima_keuangan')->count();
-            $stats['sudah_dinilai'] = (clone $queryBase)->where('status', 'dinilai_admin')->count();
-            $stats['total_pengajuan'] = (clone $queryBase)->whereIn('status', ['diterima_keuangan', 'dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir'])->count();
-        } elseif ($role === 'keuangan') {
-            $stats['menunggu_validasi'] = PengajuanPenurunanUkt::where('status', 'diajukan')->count();
-            $stats['belum_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_admin')->count();
-            $stats['sudah_dinilai'] = PengajuanPenurunanUkt::where('status', 'dinilai_keuangan')->count();
+
+            // Tentukan status untuk "Belum Dinilai" (List Pengajuan) dan "Sudah Dinilai" (Arsip)
+            $listStatuses = [];
+            $arsipStatuses = [];
+
+            if ($role === 'admin') {
+                $listStatuses = ['diterima_keuangan'];
+                $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+            } elseif ($role === 'keuangan') {
+                $listStatuses = ['diajukan', 'dinilai_admin'];
+                $arsipStatuses = ['diterima_keuangan', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
+            } elseif ($role === 'wadir') {
+                $listStatuses = ['dinilai_keuangan'];
+                $arsipStatuses = ['dinilai_wadir', 'ditolak'];
+            }
+
+            $stats['belum_dinilai'] = (clone $queryBase)->whereIn('status', $listStatuses)->count();
+            $stats['sudah_dinilai'] = (clone $queryBase)->whereIn('status', $arsipStatuses)->count();
+            $stats['total_pengajuan'] = $stats['belum_dinilai'] + $stats['sudah_dinilai'];
             $stats['total_sk'] = SkPenurunanUkt::count();
-        } elseif ($role === 'wadir') {
-            $stats['menunggu_keputusan'] = PengajuanPenurunanUkt::where('status', 'dinilai_keuangan')->count();
-            $stats['sudah_diputuskan'] = PengajuanPenurunanUkt::where('status', 'dinilai_wadir')->count();
-            $stats['total_pengajuan'] = PengajuanPenurunanUkt::whereIn('status', ['dinilai_keuangan', 'dinilai_wadir'])->count();
         }
 
         return $stats;
