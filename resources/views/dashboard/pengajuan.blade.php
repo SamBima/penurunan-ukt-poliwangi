@@ -299,9 +299,8 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Jenis Dokumen</label>
-                                                    <input type="text" class="form-control"
-                                                        name="dokumen[{{ $i }}][keterangan]"
-                                                        placeholder="Keterangan dokumen">
+                                                    <input type="text" class="form-control" value="{{ $label }}" readonly>
+                                                    <input type="hidden" name="dokumen[{{ $i }}][jenis]" value="{{ $key }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
