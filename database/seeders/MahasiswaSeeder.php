@@ -462,7 +462,7 @@ class MahasiswaSeeder extends Seeder
                 'kepemilikan_kartu' => $data['kepemilikan_kartu'],
                 'alasan_pengajuan' => $data['alasan'],
                 'link_drive' => 'https://drive.google.com/drive/folders/' . Str::random(30),
-                'status' => 'diajukan',
+                'status' => ($key % 3 === 0) ? 'diajukan' : (($key % 3 === 1) ? 'diterima_keuangan' : 'dinilai_keuangan'),
                 'created_at' => now()->subDays(rand(1, 10)),
                 'updated_at' => now(),
             ]);
