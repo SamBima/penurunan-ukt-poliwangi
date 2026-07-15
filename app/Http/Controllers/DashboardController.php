@@ -98,6 +98,10 @@ class DashboardController extends Controller
             $stats['sudah_dinilai'] = (clone $queryBase)->whereIn('status', $arsipStatuses)->count();
             $stats['total_pengajuan'] = $stats['belum_dinilai'] + $stats['sudah_dinilai'];
             $stats['total_sk'] = SkPenurunanUkt::count();
+            
+            if ($role === 'keuangan') {
+                $stats['menunggu_validasi'] = (clone $queryBase)->where('status', 'diajukan')->count();
+            }
         }
 
         return $stats;

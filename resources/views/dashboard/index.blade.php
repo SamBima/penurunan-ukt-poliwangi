@@ -95,6 +95,19 @@
                                     </div>
                                 </div>
                             </div>
+                            @if($role === 'keuangan')
+                            <div class="col-sm-6 mb-3">
+                                <div class="d-flex justify-content-between align-items-center p-3 shadow-sm" style="border: 1px solid #e2e8f0; border-left: 4px solid #17a2b8; border-radius: 6px; background-color: #ffffff; height: 85px;">
+                                    <div>
+                                        <div style="font-size: 11px; font-weight: 700; color: #17a2b8; letter-spacing: 0.5px; text-transform: uppercase; font-family: 'Inter', sans-serif;">Menunggu Validasi</div>
+                                        <div style="font-size: 26px; font-weight: 700; color: #1e293b; margin-top: 4px; font-family: 'Inter', sans-serif;">{{ $stats['menunggu_validasi'] }}</div>
+                                    </div>
+                                    <div style="font-size: 32px; color: #d1d5db; padding-right: 4px;">
+                                        <i class="fas fa-hourglass-half"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     @endif
                 </div>
