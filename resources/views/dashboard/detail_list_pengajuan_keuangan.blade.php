@@ -401,9 +401,7 @@
             @php
                 $poinRumahSAW = $existingPoint->poin_kondisi_rumah ?? 0;
 
-                // Definisi kriteria: [label, nilai, max, bobot, tipe]
-                // Tipe 'cost' = poin tinggi = lebih mampu = kurang layak → normalized = (max-poin)/max
-                // Tipe 'benefit' = nilai tinggi = kondisi buruk = lebih layak → normalized = nilai/max
+                // Definisi kriteria: [label, nilai, max, bobot, tipe, icon]
                 $sawCriteria = [
                     ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
                     ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
@@ -435,18 +433,26 @@
                     $sawLabel = 'Sangat Layak';
                     $sawBadge = 'success';
                     $sawIcon = 'fa-check-circle';
+                    $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
+                    $sawRecTariff = 'Rp 500.000';
                 } elseif ($sawScore >= 0.50) {
                     $sawLabel = 'Layak';
                     $sawBadge = 'primary';
                     $sawIcon = 'fa-thumbs-up';
+                    $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                    $sawRecTariff = 'Rp 2.000.000';
                 } elseif ($sawScore >= 0.30) {
                     $sawLabel = 'Kurang Layak';
                     $sawBadge = 'warning';
                     $sawIcon = 'fa-exclamation-circle';
+                    $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                    $sawRecTariff = 'Rp 3.000.000';
                 } else {
                     $sawLabel = 'Tidak Layak';
                     $sawBadge = 'danger';
                     $sawIcon = 'fa-times-circle';
+                    $sawRecStatus = 'UKT Tetap / diangsur';
+                    $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
                 }
             @endphp
 
@@ -456,24 +462,24 @@
                         <i class="fas fa-calculator"></i> Hasil SAW
                         <small class="text-muted font-weight-normal">(Simple Additive Weighting)</small>
                     </h6>
-                    <span class="badge badge-{{ $sawBadge }} px-3 py-2">
-                        <i class="fas {{ $sawIcon }}"></i> {{ $sawLabel }}
+                    <span id="saw_badge_header" class="badge badge-{{ $sawBadge }} px-3 py-2">
+                        <i id="saw_icon_header" class="fas {{ $sawIcon }}"></i> <span id="saw_label_header">{{ $sawLabel }}</span>
                     </span>
                 </div>
                 <div class="card-body">
 
                     {{-- Score Bar --}}
                     <div class="text-center mb-3">
-                        <h3 class="font-weight-bold text-{{ $sawBadge }}">{{ $sawPersen }}%</h3>
+                        <h3 id="saw_percent_big" class="font-weight-bold text-{{ $sawBadge }}">{{ $sawPersen }}%</h3>
                         <div class="progress" style="height: 18px; border-radius: 9px;">
-                            <div class="progress-bar bg-{{ $sawBadge }} progress-bar-striped progress-bar-animated"
+                            <div id="saw_progress_bar" class="progress-bar bg-{{ $sawBadge }} progress-bar-striped progress-bar-animated"
                                  role="progressbar"
                                  style="width: {{ $sawPersen }}%;"
                                  aria-valuenow="{{ $sawPersen }}" aria-valuemin="0" aria-valuemax="100">
                                 {{ $sawPersen }}%
                             </div>
                         </div>
-                        <small class="text-muted mt-1 d-block">Skor akhir SAW: <strong>{{ $sawScore }}</strong> / 1.00</small>
+                        <small class="text-muted mt-1 d-block">Skor akhir SAW: <strong id="saw_total_score">{{ number_format($sawScore, 4) }}</strong> / 1.00</small>
                     </div>
 
                     <hr>
@@ -494,24 +500,40 @@
                                 @foreach($sawCriteria as $c)
                                 <tr class="text-center">
                                     <td class="text-left"><i class="fas {{ $c['icon'] }} text-muted mr-1"></i> {{ $c['label'] }}</td>
-                                    <td>{{ $c['nilai'] }}</td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_val_rumah" @endif>{{ $c['nilai'] }}</td>
                                     <td>{{ number_format($c['bobot'] * 100, 0) }}%</td>
-                                    <td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_norm_rumah" @endif>
                                         <span class="badge badge-{{ $c['normalized'] >= 0.5 ? 'success' : ($c['normalized'] >= 0.25 ? 'warning' : 'danger') }}">
                                             {{ number_format($c['normalized'] * 100, 1) }}%
                                         </span>
                                     </td>
-                                    <td><strong>{{ number_format($c['weighted'], 4) }}</strong></td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_weight_rumah" @endif><strong>{{ number_format($c['weighted'], 4) }}</strong></td>
                                 </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="table-info">
                                 <tr class="text-center font-weight-bold">
                                     <td colspan="4" class="text-right">Skor SAW Total</td>
-                                    <td>{{ $sawScore }}</td>
+                                    <td id="saw_total_score_foot">{{ number_format($sawScore, 4) }}</td>
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+
+                    {{-- Section Rekomendasi Penurunan UKT --}}
+                    <div class="alert alert-info mt-3 border-left-info shadow-sm">
+                        <h6 class="font-weight-bold text-info"><i class="fas fa-magic"></i> Rekomendasi Hasil Perhitungan SAW:</h6>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Keputusan:</small>
+                                <span class="h6 font-weight-bold text-dark" id="saw_rec_status">{{ $sawRecStatus }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Tarif UKT Baru:</small>
+                                <span class="h6 font-weight-bold text-success" id="saw_rec_tariff">{{ $sawRecTariff }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Skala Interpretasi --}}
@@ -537,6 +559,128 @@
     const TOTAL_NILAI_SISTEM = {{ $totalNilaiSistem }};
     let sudahDiverifikasi = false;
 
+    // Data kriteria untuk perhitungan SAW di client-side
+    const sawData = {
+        totalGaji: { nilai: {{ $pengajuan->poin_total_gaji }}, max: 80, bobot: 0.30, tipe: 'cost' },
+        tanggungan: { nilai: {{ $pengajuan->poin_jumlah_tanggungan }}, max: 80, bobot: 0.15, tipe: 'cost' },
+        dayaListrik: { nilai: {{ $pengajuan->poin_daya_listrik }}, max: 40, bobot: 0.10, tipe: 'cost' },
+        tagihanListrik: { nilai: {{ $pengajuan->poin_tagihan_listrik }}, max: 90, bobot: 0.10, tipe: 'cost' },
+        tagihanPdam: { nilai: {{ $pengajuan->poin_tagihan_pdam }}, max: 100, bobot: 0.05, tipe: 'cost' },
+        pbb: { nilai: {{ $pengajuan->poin_pbb }}, max: 100, bobot: 0.05, tipe: 'cost' },
+        motor: { nilai: {{ $pengajuan->poin_jumlah_motor }}, max: 45, bobot: 0.08, tipe: 'cost' },
+        mobil: { nilai: {{ $pengajuan->poin_jumlah_mobil }}, max: 80, bobot: 0.07, tipe: 'cost' },
+        kondisiRumah: { nilai: 0, max: 100, bobot: 0.10, tipe: 'benefit' }
+    };
+
+    function hitungSAW() {
+        let totalSAWScore = 0;
+
+        // Hitung masing-masing kriteria
+        for (const [key, c] of Object.entries(sawData)) {
+            let normalized = 0;
+            if (c.max > 0) {
+                if (c.tipe === 'cost') {
+                    normalized = (c.max - c.nilai) / c.max;
+                } else {
+                    normalized = c.nilai / c.max;
+                }
+            }
+            normalized = Math.round(normalized * 10000) / 10000;
+            const weighted = Math.round(normalized * c.bobot * 10000) / 10000;
+            totalSAWScore += weighted;
+
+            // Jika ini kondisi rumah, update baris tabel Kondisi Rumah secara dinamis
+            if (key === 'kondisiRumah') {
+                const valRumahCell = document.getElementById('saw_val_rumah');
+                const normRumahCell = document.getElementById('saw_norm_rumah');
+                const weightRumahCell = document.getElementById('saw_weight_rumah');
+
+                if (valRumahCell) valRumahCell.textContent = c.nilai;
+                if (normRumahCell) {
+                    const pct = Math.round(normalized * 1000) / 10;
+                    const badgeClass = normalized >= 0.5 ? 'success' : (normalized >= 0.25 ? 'warning' : 'danger');
+                    normRumahCell.innerHTML = `<span class="badge badge-${badgeClass}">${pct}%</span>`;
+                }
+                if (weightRumahCell) {
+                    weightRumahCell.innerHTML = `<strong>${weighted.toFixed(4)}</strong>`;
+                }
+            }
+        }
+
+        totalSAWScore = Math.round(totalSAWScore * 10000) / 10000;
+        const sawPersen = Math.round(totalSAWScore * 1000) / 10;
+
+        // Update overall display
+        const totalScoreSpan = document.getElementById('saw_total_score');
+        const totalScoreFoot = document.getElementById('saw_total_score_foot');
+        const percentBig = document.getElementById('saw_percent_big');
+        const progressBar = document.getElementById('saw_progress_bar');
+        const badgeHeader = document.getElementById('saw_badge_header');
+        const iconHeader = document.getElementById('saw_icon_header');
+        const labelHeader = document.getElementById('saw_label_header');
+
+        if (totalScoreSpan) totalScoreSpan.textContent = totalSAWScore.toFixed(4);
+        if (totalScoreFoot) totalScoreFoot.textContent = totalSAWScore.toFixed(4);
+        if (percentBig) percentBig.textContent = `${sawPersen}%`;
+        
+        if (progressBar) {
+            progressBar.style.width = `${sawPersen}%`;
+            progressBar.textContent = `${sawPersen}%`;
+            progressBar.setAttribute('aria-valuenow', sawPersen);
+        }
+
+        // Tentukan kelayakan
+        let label = 'Tidak Layak';
+        let badge = 'danger';
+        let icon = 'fa-times-circle';
+        let recStatus = 'UKT Tetap / diangsur';
+        let recTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+
+        if (totalSAWScore >= 0.70) {
+            label = 'Sangat Layak';
+            badge = 'success';
+            icon = 'fa-check-circle';
+            recStatus = 'Disetujui Penurunan Sampai Lulus';
+            recTariff = 'Rp 500.000';
+        } else if (totalSAWScore >= 0.50) {
+            label = 'Layak';
+            badge = 'primary';
+            icon = 'fa-thumbs-up';
+            recStatus = 'Disetujui Penurunan 2 Semester';
+            recTariff = 'Rp 2.000.000';
+        } else if (totalSAWScore >= 0.30) {
+            label = 'Kurang Layak';
+            badge = 'warning';
+            icon = 'fa-exclamation-circle';
+            recStatus = 'Disetujui Penurunan 1 Semester';
+            recTariff = 'Rp 3.000.000';
+        }
+
+        // Update header badge classes & text
+        if (badgeHeader) {
+            badgeHeader.className = `badge badge-${badge} px-3 py-2`;
+        }
+        if (iconHeader) {
+            iconHeader.className = `fas ${icon}`;
+        }
+        if (labelHeader) {
+            labelHeader.textContent = label;
+        }
+        if (percentBig) {
+            percentBig.className = `font-weight-bold text-${badge}`;
+        }
+        if (progressBar) {
+            progressBar.className = `progress-bar bg-${badge} progress-bar-striped progress-bar-animated`;
+        }
+
+        // Update Rekomendasi alert
+        const recStatusSpan = document.getElementById('saw_rec_status');
+        const recTariffSpan = document.getElementById('saw_rec_tariff');
+
+        if (recStatusSpan) recStatusSpan.textContent = recStatus;
+        if (recTariffSpan) recTariffSpan.textContent = recTariff;
+    }
+
     function hitungTotalPoin() {
         const inputRumah = document.getElementById('poin_kondisi_rumah');
         const inputTotal = document.getElementById('poin_wawancara');
@@ -554,6 +698,10 @@
         if (labelDetail) {
             labelDetail.innerHTML = `<i class="fas fa-info-circle text-primary"></i> <strong>Otomatis: nilai sistem (${TOTAL_NILAI_SISTEM}) + skor kondisi rumah (${skorRumah}) = ${totalBaru}</strong>`;
         }
+
+        // Update kriteria kondisi rumah di sawData dan hitung ulang SAW
+        sawData.kondisiRumah.nilai = skorRumah;
+        hitungSAW();
     }
 
     function verifikasiNilaiRumah() {
@@ -568,7 +716,7 @@
         if (skor < 0) { skor = 0; inputRumah.value = 0; }
         if (skor > 100) { skor = 100; inputRumah.value = 100; }
 
-        // Update total
+        // Update total & SAW
         hitungTotalPoin();
 
         // Tampilkan status verifikasi
