@@ -390,5 +390,53 @@ class MahasiswaSeeder extends Seeder
                 ]);
             }
         }
+
+        // Seed submission for existing Mahasiswa Demo from UserSeeder
+        $demoMhs = DB::table('mahasiswa')->where('nim', '220101001')->first();
+        if ($demoMhs) {
+            $exists = DB::table('pengajuan_penurunan_ukt')->where('mahasiswa_id', $demoMhs->id)->exists();
+            if (!$exists) {
+                $pengajuanId = DB::table('pengajuan_penurunan_ukt')->insertGetId([
+                    'mahasiswa_id' => $demoMhs->id,
+                    'kode' => 'PRN000',
+                    'pekerjaan_ayah' => 'Buruh Harian Lepas',
+                    'penghasilan_ayah' => 1500000,
+                    'pekerjaan_ibu' => 'Ibu Rumah Tangga',
+                    'penghasilan_ibu' => 0,
+                    'total_gaji' => 1500000,
+                    'jumlah_tanggungan' => 3,
+                    'daya_listrik' => 900,
+                    'tagihan_listrik' => 120000,
+                    'tagihan_pdam' => 40000,
+                    'pbb' => 30000,
+                    'jumlah_motor' => 1,
+                    'jumlah_mobil' => 0,
+                    'kepemilikan_kartu' => 'SKTM',
+                    'alasan_pengajuan' => 'Membantu demo pengujian sistem penurunan UKT.',
+                    'link_drive' => 'https://drive.google.com/drive/folders/' . \Illuminate\Support\Str::random(30),
+                    'status' => 'diajukan',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $dokumenTypes = [
+                    ['jenis' => 'foto_rumah', 'name' => 'Foto Rumah Depan'],
+                    ['jenis' => 'foto_mobil', 'name' => 'Foto Garasi / Kondisi Transportasi'],
+                    ['jenis' => 'foto_motor', 'name' => 'Foto Kendaraan Roda Dua'],
+                    ['jenis' => 'tagihan_listrik', 'name' => 'Bukti Pembayaran Tagihan Listrik'],
+                ];
+
+                foreach ($dokumenTypes as $doc) {
+                    DB::table('dokumen_pendukung')->insert([
+                        'pengajuan_id' => $pengajuanId,
+                        'jenis_dokumen' => $doc['jenis'],
+                        'keterangan' => $doc['name'] . ' Mahasiswa Demo',
+                        'path' => 'dokumen-pendukung/dummy.png',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
     }
 }
