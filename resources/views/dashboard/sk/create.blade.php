@@ -36,7 +36,7 @@
                             <label for="nomor_sk">Nomor SK <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('nomor_sk') is-invalid @enderror"
                                    id="nomor_sk" name="nomor_sk" value="{{ old('nomor_sk') }}"
-                                   placeholder="Contoh: SK/001/UKT/2024" required>
+                                   placeholder="Otomatis Terisi" readonly required>
                             @error('nomor_sk')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -120,6 +120,24 @@
 @push('scripts')
 <script>
 $(document).ready(function () {
+    // Generate 3 random digits
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    
+    function updateNomorSk() {
+        const tahunVal = $('#tahun').val() || new Date().getFullYear();
+        $('#nomor_sk').val(`SK/${randomNum}/UKT/${tahunVal}`);
+    }
+
+    // Auto-generate on load if empty
+    if (!$('#nomor_sk').val()) {
+        updateNomorSk();
+    }
+
+    // Update dynamically when year changes
+    $('#tahun').on('input change', function() {
+        updateNomorSk();
+    });
+
     $('.custom-file-input').on('change', function () {
         let fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').addClass('selected').html(fileName);
