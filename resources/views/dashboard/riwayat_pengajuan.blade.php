@@ -35,7 +35,7 @@
                                 <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Menunggu Persetujuan Keuangan</option>
                                 <option value="diterima_keuangan" {{ request('status') == 'diterima_keuangan' ? 'selected' : '' }}>Disetujui Keuangan</option>
                                 <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak Keuangan</option>
-                                <option value="dinilai_admin" {{ request('status') == 'dinilai_admin' ? 'selected' : '' }}>Dinilai Kajur</option>
+                                <option value="dinilai_admin" {{ request('status') == 'dinilai_admin' ? 'selected' : '' }}>Divalidasi Admin</option>
                                 <option value="dinilai_keuangan" {{ request('status') == 'dinilai_keuangan' ? 'selected' : '' }}>Dinilai Keuangan</option>
                                 <option value="dinilai_wadir" {{ request('status') == 'dinilai_wadir' ? 'selected' : '' }}>Selesai</option>
                             </select>
@@ -79,7 +79,7 @@
                                 'diajukan' => ['class' => 'warning', 'text' => 'Menunggu Persetujuan Keuangan'],
                                 'diterima_keuangan' => ['class' => 'info', 'text' => 'Disetujui Keuangan'],
                                 'ditolak' => ['class' => 'danger', 'text' => 'Ditolak Keuangan'],
-                                'dinilai_admin' => ['class' => 'info', 'text' => 'Dinilai Kajur'],
+                                'dinilai_admin' => ['class' => 'info', 'text' => 'Divalidasi Admin'],
                                 'dinilai_keuangan' => ['class' => 'info', 'text' => 'Dinilai Keuangan'],
                                 'dinilai_wadir' => ['class' => 'success', 'text' => 'Selesai']
                             ];
@@ -113,7 +113,7 @@
                                 $steps = [
                                     ['key' => 'diajukan', 'label' => 'Pengajuan', 'icon' => 'file-alt'],
                                     ['key' => 'diterima_keuangan', 'label' => 'Verifikasi Keuangan', 'icon' => 'check-circle'],
-                                    ['key' => 'dinilai_admin', 'label' => 'Penilaian Kajur', 'icon' => 'user-tie'],
+                                    ['key' => 'dinilai_admin', 'label' => 'Divalidasi Admin', 'icon' => 'user-tie'],
                                     ['key' => 'dinilai_keuangan', 'label' => 'Penilaian Keuangan', 'icon' => 'calculator'],
                                     ['key' => 'dinilai_wadir', 'label' => 'Keputusan Wadir', 'icon' => 'gavel']
                                 ];

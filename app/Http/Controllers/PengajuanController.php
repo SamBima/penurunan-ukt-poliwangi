@@ -787,7 +787,7 @@ class PengajuanController extends Controller
         $statusLabels = [
             'diajukan' => 'Diajukan',
             'diterima_keuangan' => 'Diterima Keuangan',
-            'dinilai_admin' => 'Dinilai Kajur',
+            'dinilai_admin' => 'Divalidasi Admin',
             'dinilai_keuangan' => 'Dinilai Keuangan',
             'dinilai_wadir' => 'Selesai (Keputusan Wadir)',
             'ditolak' => 'Ditolak',

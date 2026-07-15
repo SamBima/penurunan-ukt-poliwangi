@@ -149,6 +149,9 @@
                                             $badgeClass = 'badge-primary';
                                             break;
                                         case 'dinilai_admin':
+                                            $badgeClass = 'badge-info';
+                                            $statusLabel = 'Divalidasi Admin';
+                                            break;
                                         case 'dinilai_keuangan':
                                             $badgeClass = 'badge-info';
                                             break;
