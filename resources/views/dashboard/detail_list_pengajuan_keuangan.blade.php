@@ -245,31 +245,6 @@
                     @endif
                 </div>
             </div>
-
-            @if($poinAdmin)
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-success text-white">
-                    <h6 class="m-0 font-weight-bold">Penilaian Admin</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Penghasilan Orang Tua:</strong> {{ $poinAdmin->poin_penghasilan_ortu }} poin</p>
-                            <p class="mb-1"><strong>Tagihan Bulanan:</strong> {{ $poinAdmin->poin_tagihan }} poin</p>
-                            <p class="mb-1"><strong>Kepemilikan Kendaraan:</strong> {{ $poinAdmin->poin_kepemilikan }} poin</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Kondisi Rumah:</strong> {{ $poinAdmin->poin_kondisi_rumah }} poin</p>
-                            <p class="mb-1"><strong>Kartu Bantuan:</strong> {{ $poinAdmin->poin_kartu_bantuan }} poin</p>
-                            <p class="mb-1"><strong>Pernyataan Teman:</strong> {{ $poinAdmin->poin_pernyataan_teman }} poin</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <h5 class="text-success"><strong>Total Poin Admin: {{ $poinAdmin->total_poin }}</strong></h5>
-                    <small class="text-muted">Dinilai oleh: {{ $poinAdmin->user->name }} pada {{ $poinAdmin->created_at->format('d M Y H:i') }}</small>
-                </div>
-            </div>
-            @endif
         </div>
 
         <div class="col-lg-4">
@@ -281,6 +256,7 @@
                     <form action="{{ route('list-pengajuan.validasi', $pengajuan->kode) }}" method="POST" id="validasiForm">
                         @csrf
                         <input type="hidden" name="pengajuan_id" value="{{ $pengajuan->id }}">
+                        <input type="hidden" name="poin_kondisi_rumah" id="hidden_poin_kondisi_rumah" value="{{ $existingPoint->poin_kondisi_rumah ?? 0 }}">
 
                         <h6 class="text-primary mb-3"><i class="fas fa-calculator"></i> Penilaian Poin Keuangan</h6>
 
@@ -685,6 +661,7 @@
         const inputRumah = document.getElementById('poin_kondisi_rumah');
         const inputTotal = document.getElementById('poin_wawancara');
         const labelDetail = document.getElementById('total_label_detail');
+        const hiddenRumah = document.getElementById('hidden_poin_kondisi_rumah');
 
         if (!inputRumah || !inputTotal) return;
 
@@ -694,6 +671,10 @@
 
         const totalBaru = TOTAL_NILAI_SISTEM + skorRumah;
         inputTotal.value = totalBaru;
+
+        if (hiddenRumah) {
+            hiddenRumah.value = skorRumah;
+        }
 
         if (labelDetail) {
             labelDetail.innerHTML = `<i class="fas fa-info-circle text-primary"></i> <strong>Otomatis: nilai sistem (${TOTAL_NILAI_SISTEM}) + skor kondisi rumah (${skorRumah}) = ${totalBaru}</strong>`;
