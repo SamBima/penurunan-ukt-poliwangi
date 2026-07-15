@@ -102,10 +102,10 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <strong>{{ $item->mahasiswa->nama_lengkap }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ $item->mahasiswa->program_studi ?? 'Program Studi' }}</small>
-                                    </div>
+                                         <strong>{{ $item->mahasiswa->nama_lengkap }}</strong>
+                                         <br>
+                                         <small class="text-muted">{{ $item->mahasiswa->prodi->nama ?? 'Program Studi' }}</small>
+                                     </div>
                                 </div>
                             </td>
                             <td>

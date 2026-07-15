@@ -623,7 +623,7 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi']);
 
         // Filter by admin's jurusan_id
         if ($role === 'admin' && $user->jurusan_id) {
@@ -715,7 +715,7 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
 
-        $query = PengajuanPenurunanUkt::with(['mahasiswa']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi']);
 
         // Filter by admin's jurusan_id for archives
         if ($role === 'admin' && $user->jurusan_id) {
