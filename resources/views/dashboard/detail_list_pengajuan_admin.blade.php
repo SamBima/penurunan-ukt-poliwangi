@@ -295,29 +295,25 @@
                 </div>
                 <div class="card-body">
                     @foreach($pengajuan->hasilValidasi as $validasi)
-                    <div class="border-left-primary shadow-sm p-3 mb-3">
-                        <div class="row">
-                            <div class="col-12">
-                                <h6 class="font-weight-bold">{{ $validasi->validator_name }}</h6>
-                                <small class="text-muted">{{ $validasi->validator_role }} • {{ $validasi->created_at->format('d M Y H:i') }}</small>
-                            </div>
+                    <div class="card shadow-sm border-left-primary mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="font-weight-bold mb-1" style="color: #2e3d55;">{{ $validasi->validator_name }}</h6>
+                            <small class="text-muted d-block mb-2">{{ $validasi->validator_role }} • {{ $validasi->created_at->format('d M Y H:i') }}</small>
+                            <hr class="my-2">
+                            <p class="mb-1 text-dark"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara ?? '-' }}</p>
+                            <p class="mb-1 text-dark"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
+                            <p class="mb-1 text-dark">
+                                <strong>Status:</strong>
+                                <span class="badge badge-{{ $validasi->status === 'disetujui' ? 'success' : 'warning' }} px-2 py-1 font-weight-bold">
+                                    {{ $validasi->status_label }}
+                                </span>
+                            </p>
+                            @if($validasi->persentase_penurunan > 0)
+                            <p class="text-success font-weight-bold mb-0 mt-1 small">
+                                <i class="fas fa-arrow-down text-success"></i> Penurunan {{ $validasi->formatted_persentase_penurunan }}
+                            </p>
+                            @endif
                         </div>
-                        <hr class="my-2">
-                        @if($validasi->hasil_wawancara)
-                        <p class="mb-1"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara }}</p>
-                        @endif
-                        <p class="mb-1"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
-                        <p class="mb-0">
-                            <strong>Status:</strong>
-                            <span class="badge badge-{{ $validasi->status == 'disetujui' ? 'success' : 'warning' }}">
-                                {{ $validasi->status_label }}
-                            </span>
-                        </p>
-                        @if($validasi->persentase_penurunan > 0)
-                        <small class="text-success">
-                            <i class="fas fa-arrow-down"></i> Penurunan {{ $validasi->formatted_persentase_penurunan }}
-                        </small>
-                        @endif
                     </div>
                     @endforeach
                 </div>
