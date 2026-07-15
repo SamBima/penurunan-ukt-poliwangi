@@ -352,12 +352,12 @@
                                 </div>
                             </div>
 
-                            @if($pengajuan->hasilValidasi->count() > 0)
+                            @if($pengajuan->hasilValidasi->where('validator.role', 'wadir')->count() > 0)
                                 <div class="row">
                                     <div class="col-md-12">
                                         <h6 class="text-primary border-bottom pb-2"><i class="fas fa-clipboard-check"></i> Hasil Penilaian</h6>
 
-                                        @foreach(['admin' => 'Kajur', 'keuangan' => 'Keuangan', 'wadir' => 'Wadir'] as $role => $label)
+                                        @foreach(['wadir' => 'Wadir'] as $role => $label)
                                             @php
                                                 $hasil = $pengajuan->hasilValidasi->where('validator.role', $role)->first();
                                                 $poin = $pengajuan->pointPengajuan->where('role', $role)->first();
