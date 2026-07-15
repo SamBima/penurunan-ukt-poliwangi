@@ -186,7 +186,7 @@ class PengajuanPenurunanUkt extends Model
         }
     }
     
-    public function getPoinPBBAttribute()
+    public function getPoinPbbAttribute()
     {
         $pbb = $this->pbb;
 
@@ -211,7 +211,7 @@ class PengajuanPenurunanUkt extends Model
         }
     }
     
-    public function getPoinTagihanPDAMAttribute()
+    public function getPoinTagihanPdamAttribute()
     {
         $tagihanPDAM = $this->tagihan_pdam;
 
