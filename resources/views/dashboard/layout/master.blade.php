@@ -166,7 +166,7 @@
     <script src="{{ url('assets/dashboard/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ url('assets/dashboard/js/demo/chart-pie-demo.js') }}"></script>
 
-    @stack('script')
+    @stack('scripts')
 </body>
 
 </html>
