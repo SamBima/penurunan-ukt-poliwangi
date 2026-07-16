@@ -308,7 +308,7 @@
                                                     <label>File <span class="text-danger">*</span></label>
                                                     <input type="file" class="form-control-file"
                                                         name="dokumen[{{ $i }}][file]"
-                                                        accept=".jpg,.jpeg,.png,.pdf" required>
+                                                        accept=".pdf" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <label>File</label>
                                 <input type="file" class="form-control-file"
                                     name="dokumen[${dokumenIndex}][file]"
-                                    accept=".jpg,.jpeg,.png,.pdf" required>
+                                    accept=".pdf" required>
                             </div>
                         </div>
                         <div class="col-md-2">

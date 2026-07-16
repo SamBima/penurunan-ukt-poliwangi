@@ -47,7 +47,7 @@ class PengajuanController extends Controller
             'dokumen' => 'required|array|min:4',
             'dokumen.*.jenis' => 'required|string',
             'dokumen.*.keterangan' => 'nullable|string|max:255',
-            'dokumen.*.file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'dokumen.*.file' => 'required|file|mimes:pdf|max:5120',
         ], [
             'penghasilan_ayah.required' => 'Penghasilan ayah wajib diisi.',
             'penghasilan_ayah.integer' => 'Penghasilan ayah harus berupa angka.',
@@ -111,7 +111,7 @@ class PengajuanController extends Controller
             'dokumen.min' => 'Minimal 4 dokumen pendukung harus diupload.',
             'dokumen.*.jenis.required' => 'Jenis dokumen wajib diisi.',
             'dokumen.*.file.required' => 'File dokumen wajib diupload.',
-            'dokumen.*.file.mimes' => 'File harus berformat: jpg, jpeg, png, atau pdf.',
+            'dokumen.*.file.mimes' => 'File harus berformat: pdf.',
             'dokumen.*.file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
