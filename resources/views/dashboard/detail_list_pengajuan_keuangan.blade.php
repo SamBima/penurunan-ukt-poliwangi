@@ -373,24 +373,29 @@
 
                 // Definisi kriteria: [label, nilai, max, bobot, tipe, icon]
                 $sawCriteria = [
-                    ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
+                    ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
                     ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
-                    ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
-                    ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
+                    ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
+                    ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
                     ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
                     ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                    ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
                     ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
                     ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                    ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
                 ];
 
                 $sawScore = 0;
                 foreach ($sawCriteria as &$c) {
-                    if ($c['max'] == 0) { $c['normalized'] = 0; continue; }
-                    if ($c['tipe'] === 'cost') {
-                        $c['normalized'] = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                    if (isset($c['min']) && $c['min'] < 0) {
+                        $c['normalized'] = round(($c['max'] - $c['nilai']) / ($c['max'] - $c['min']), 4);
                     } else {
-                        $c['normalized'] = round($c['nilai'] / $c['max'], 4);
+                        if ($c['max'] == 0) { $c['normalized'] = 0; continue; }
+                        if ($c['tipe'] === 'cost') {
+                            $c['normalized'] = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                        } else {
+                            $c['normalized'] = round($c['nilai'] / $c['max'], 4);
+                        }
                     }
                     $c['weighted'] = round($c['normalized'] * $c['bobot'], 4);
                     $sawScore += $c['weighted'];
@@ -530,15 +535,16 @@
     let sudahDiverifikasi = false;
 
     const sawData = {
-        totalGaji: { nilai: {{ $pengajuan->poin_total_gaji }}, max: 80, bobot: 0.30, tipe: 'cost' },
+        totalGaji: { nilai: {{ $pengajuan->poin_total_gaji }}, max: 80, bobot: 0.25, tipe: 'cost' },
         tanggungan: { nilai: {{ $pengajuan->poin_jumlah_tanggungan }}, max: 80, bobot: 0.15, tipe: 'cost' },
-        dayaListrik: { nilai: {{ $pengajuan->poin_daya_listrik }}, max: 40, bobot: 0.10, tipe: 'cost' },
-        tagihanListrik: { nilai: {{ $pengajuan->poin_tagihan_listrik }}, max: 90, bobot: 0.10, tipe: 'cost' },
+        dayaListrik: { nilai: {{ $pengajuan->poin_daya_listrik }}, max: 40, bobot: 0.08, tipe: 'cost' },
+        tagihanListrik: { nilai: {{ $pengajuan->poin_tagihan_listrik }}, max: 90, bobot: 0.08, tipe: 'cost' },
         tagihanPdam: { nilai: {{ $pengajuan->poin_tagihan_pdam }}, max: 100, bobot: 0.05, tipe: 'cost' },
         pbb: { nilai: {{ $pengajuan->poin_pbb }}, max: 100, bobot: 0.05, tipe: 'cost' },
-        motor: { nilai: {{ $pengajuan->poin_jumlah_motor }}, max: 45, bobot: 0.08, tipe: 'cost' },
+        motor: { nilai: {{ $pengajuan->poin_jumlah_motor }}, max: 45, bobot: 0.07, tipe: 'cost' },
         mobil: { nilai: {{ $pengajuan->poin_jumlah_mobil }}, max: 80, bobot: 0.07, tipe: 'cost' },
-        kondisiRumah: { nilai: 0, max: 100, bobot: 0.10, tipe: 'benefit' }
+        kondisiRumah: { nilai: 0, max: 100, bobot: 0.10, tipe: 'benefit' },
+        kepemilikanKartu: { nilai: {{ $pengajuan->poin_kepemilikan_kartu }}, min: -15, max: 0, bobot: 0.10, tipe: 'cost' }
     };
 
     function hitungSAW() {
@@ -547,7 +553,9 @@
         // Hitung masing-masing kriteria
         for (const [key, c] of Object.entries(sawData)) {
             let normalized = 0;
-            if (c.max > 0) {
+            if (c.min !== undefined && c.min < 0) {
+                normalized = (c.max - c.nilai) / (c.max - c.min);
+            } else if (c.max > 0) {
                 if (c.tipe === 'cost') {
                     normalized = (c.max - c.nilai) / c.max;
                 } else {

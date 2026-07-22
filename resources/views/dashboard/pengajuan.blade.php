@@ -42,13 +42,19 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="penghasilan_ayah">Penghasilan Ayah <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('penghasilan_ayah') is-invalid @enderror"
-                                   id="penghasilan_ayah" name="penghasilan_ayah"
-                                   value="{{ old('penghasilan_ayah') }}" required>
-                            @error('penghasilan_ayah')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="penghasilan_ayah">Penghasilan Ayah (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" min="0" class="form-control @error('penghasilan_ayah') is-invalid @enderror"
+                                       id="penghasilan_ayah" name="penghasilan_ayah"
+                                       value="{{ old('penghasilan_ayah') }}" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                @error('penghasilan_ayah')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -66,13 +72,19 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="penghasilan_ibu">Penghasilan Ibu <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('penghasilan_ibu') is-invalid @enderror"
-                                   id="penghasilan_ibu" name="penghasilan_ibu"
-                                   value="{{ old('penghasilan_ibu') }}" required>
-                            @error('penghasilan_ibu')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="penghasilan_ibu">Penghasilan Ibu (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" min="0" class="form-control @error('penghasilan_ibu') is-invalid @enderror"
+                                       id="penghasilan_ibu" name="penghasilan_ibu"
+                                       value="{{ old('penghasilan_ibu') }}" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                @error('penghasilan_ibu')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -91,12 +103,17 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="total_gaji">Total Gaji Keluarga <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('total_gaji') is-invalid @enderror"
-                                   id="total_gaji" name="total_gaji"
-                                   value="{{ old('total_gaji') }}" required readonly>
-                            @error('total_gaji')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="text" class="form-control @error('total_gaji') is-invalid @enderror"
+                                       id="total_gaji" name="total_gaji"
+                                       value="{{ old('total_gaji') }}" required readonly>
+                                @error('total_gaji')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -126,9 +143,10 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="daya_listrik">Daya Listrik (Watt) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('daya_listrik') is-invalid @enderror"
+                            <input type="number" min="0" class="form-control @error('daya_listrik') is-invalid @enderror"
                                    id="daya_listrik" name="daya_listrik"
-                                   value="{{ old('daya_listrik') }}" required>
+                                   value="{{ old('daya_listrik') }}" required
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             @error('daya_listrik')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -138,36 +156,54 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="tagihan_listrik">Tagihan Listrik (Rp) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('tagihan_listrik') is-invalid @enderror"
-                                   id="tagihan_listrik" name="tagihan_listrik"
-                                   value="{{ old('tagihan_listrik') }}" required>
-                            @error('tagihan_listrik')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" min="0" class="form-control @error('tagihan_listrik') is-invalid @enderror"
+                                       id="tagihan_listrik" name="tagihan_listrik"
+                                       value="{{ old('tagihan_listrik') }}" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                @error('tagihan_listrik')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="tagihan_pdam">Tagihan PDAM (Rp) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('tagihan_pdam') is-invalid @enderror"
-                                   id="tagihan_pdam" name="tagihan_pdam"
-                                   value="{{ old('tagihan_pdam') }}" required>
-                            @error('tagihan_pdam')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" min="0" class="form-control @error('tagihan_pdam') is-invalid @enderror"
+                                       id="tagihan_pdam" name="tagihan_pdam"
+                                       value="{{ old('tagihan_pdam') }}" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                @error('tagihan_pdam')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="pbb">PBB (Rp) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('pbb') is-invalid @enderror"
-                                   id="pbb" name="pbb"
-                                   value="{{ old('pbb') }}" required>
-                            @error('pbb')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" min="0" class="form-control @error('pbb') is-invalid @enderror"
+                                       id="pbb" name="pbb"
+                                       value="{{ old('pbb') }}" required
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                @error('pbb')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -221,7 +257,9 @@
                             <select class="form-control @error('kepemilikan_kartu') is-invalid @enderror"
                                     id="kepemilikan_kartu" name="kepemilikan_kartu" required>
                                 <option value="">-- Pilih Kepemilikan Kartu --</option>
+                                <option value="KIPK" {{ old('kepemilikan_kartu') == 'KIPK' ? 'selected' : '' }}>KIPK (Kartu Indonesia Pintar Kuliah)</option>
                                 <option value="KIP" {{ old('kepemilikan_kartu') == 'KIP' ? 'selected' : '' }}>KIP (Kartu Indonesia Pintar)</option>
+                                <option value="KIS" {{ old('kepemilikan_kartu') == 'KIS' ? 'selected' : '' }}>KIS (Kartu Indonesia Sehat)</option>
                                 <option value="SKTM" {{ old('kepemilikan_kartu') == 'SKTM' ? 'selected' : '' }}>SKTM (Surat Keterangan Tidak Mampu)</option>
                                 <option value="KKS" {{ old('kepemilikan_kartu') == 'KKS' ? 'selected' : '' }}>KKS (Kartu Keluarga Sejahtera)</option>
                                 <option value="Tidak Ada" {{ old('kepemilikan_kartu') == 'Tidak Ada' ? 'selected' : '' }}>Tidak Ada</option>

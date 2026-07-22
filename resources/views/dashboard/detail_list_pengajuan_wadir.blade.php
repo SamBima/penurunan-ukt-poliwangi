@@ -277,7 +277,7 @@
             @if($pengajuan->hasilValidasi->count() > 0)
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Riwayat Validasi</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Riwayat Rekomendasi</h6>
                 </div>
                 <div class="card-body">
                     @foreach($pengajuan->hasilValidasi as $validasi)
@@ -306,24 +306,29 @@
                         @php
                             $poinRumahSAW = $poinKeuangan->poin_kondisi_rumah ?? 0;
                             $sawCriteria = [
-                                ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
+                                ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
                                 ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
-                                ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
-                                ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
+                                ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
                                 ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
                                 ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                                ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
                                 ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
                                 ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                                ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
                             ];
 
                             $sawScore = 0;
                             foreach ($sawCriteria as $c) {
-                                if ($c['max'] == 0) continue;
-                                if ($c['tipe'] === 'cost') {
-                                    $norm = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                                if (isset($c['min']) && $c['min'] < 0) {
+                                    $norm = round(($c['max'] - $c['nilai']) / ($c['max'] - $c['min']), 4);
                                 } else {
-                                    $norm = round($c['nilai'] / $c['max'], 4);
+                                    if ($c['max'] == 0) continue;
+                                    if ($c['tipe'] === 'cost') {
+                                        $norm = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                                    } else {
+                                        $norm = round($c['nilai'] / $c['max'], 4);
+                                    }
                                 }
                                 $sawScore += round($norm * $c['bobot'], 4);
                             }

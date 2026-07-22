@@ -38,7 +38,7 @@ class PengajuanController extends Controller
             'jumlah_mobil' => 'required|integer|min:0',
 
             // Data Tambahan
-            'kepemilikan_kartu' => 'required|in:KIP,SKTM,KKS,Tidak Ada',
+            'kepemilikan_kartu' => 'required|in:KIP,KIPK,KIS,SKTM,KKS,Tidak Ada',
             'pernyataan_teman' => 'required|in:Ada,Tidak Ada',
             'alasan_pengajuan' => 'required|string|min:10',
             'link_drive' => 'required|url',
@@ -47,7 +47,7 @@ class PengajuanController extends Controller
             'dokumen' => 'required|array|min:4',
             'dokumen.*.jenis' => 'required|string',
             'dokumen.*.keterangan' => 'nullable|string|max:255',
-            'dokumen.*.file' => 'required|file|mimes:pdf|max:5120',
+            'dokumen.*.file' => 'required|file|mimes:pdf|max:4096',
         ], [
             'penghasilan_ayah.required' => 'Penghasilan ayah wajib diisi.',
             'penghasilan_ayah.integer' => 'Penghasilan ayah harus berupa angka.',
@@ -112,7 +112,7 @@ class PengajuanController extends Controller
             'dokumen.*.jenis.required' => 'Jenis dokumen wajib diisi.',
             'dokumen.*.file.required' => 'File dokumen wajib diupload.',
             'dokumen.*.file.mimes' => 'File harus berformat: pdf.',
-            'dokumen.*.file.max' => 'Ukuran file maksimal 5MB.',
+            'dokumen.*.file.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
         if ($validated['total_gaji'] != ($validated['penghasilan_ayah'] + $validated['penghasilan_ibu'])) {
@@ -833,23 +833,27 @@ class PengajuanController extends Controller
                     // 1. Calculate SAW score
                     $poinRumahSAW = 0; // bulk default
                     $sawCriteria = [
-                        ['nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.30, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.08, 'tipe'=>'cost'],
-                        ['nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
-                        ['nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                        ['label'=>'Penghasilan Orang Tua', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Tanggungan',     'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
+                        ['label'=>'Daya Listrik',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan Listrik',        'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan PDAM',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['label'=>'PBB',                   'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Motor',           'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Mobil',           'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
+                        ['label'=>'Kondisi Rumah',          'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                        ['label'=>'Kepemilikan Kartu',      'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
                     ];
 
                     $sawScore = 0;
                     foreach ($sawCriteria as $c) {
-                        if ($c['max'] == 0) continue;
-                        if ($c['tipe'] === 'cost') {
+                        if (isset($c['min']) && $c['min'] < 0) {
+                            $norm = ($c['max'] - $c['nilai']) / ($c['max'] - $c['min']);
+                        } elseif ($c['tipe'] === 'cost') {
+                            if ($c['max'] == 0) continue;
                             $norm = ($c['max'] - $c['nilai']) / $c['max'];
                         } else {
+                            if ($c['max'] == 0) continue;
                             $norm = $c['nilai'] / $c['max'];
                         }
                         $sawScore += $norm * $c['bobot'];

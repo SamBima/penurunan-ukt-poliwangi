@@ -282,10 +282,10 @@ class PengajuanPenurunanUkt extends Model
     public function getPoinKepemilikanKartuAttribute()
     {
         return match($this->kepemilikan_kartu) {
-            'kip', 'pkh', 'bpnt' => -15,
-            'tidak_ada' => 0,
-            'KKS' => -10,
+            'KIPK', 'KIP', 'kip', 'pkh', 'bpnt' => -15,
+            'KIS', 'KKS' => -10,
             'SKTM' => -5,
+            'Tidak Ada', 'tidak_ada' => 0,
             default => 0,
         };
     }
