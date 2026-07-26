@@ -42,7 +42,7 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="penghasilan_ayah">Penghasilan Ayah (Rp) <span class="text-danger">*</span></label>
+                            <label for="penghasilan_ayah">Penghasilan Ayah <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text font-weight-bold">Rp</span>
@@ -72,7 +72,7 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="penghasilan_ibu">Penghasilan Ibu (Rp) <span class="text-danger">*</span></label>
+                            <label for="penghasilan_ibu">Penghasilan Ibu <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text font-weight-bold">Rp</span>
