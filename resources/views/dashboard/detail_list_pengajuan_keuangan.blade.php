@@ -1,0 +1,858 @@
+@extends('dashboard.layout.master')
+
+@php
+    $totalNilaiSistem = $pengajuan->poin_total_gaji 
+        + $pengajuan->poin_jumlah_tanggungan 
+        + $pengajuan->poin_daya_listrik 
+        + $pengajuan->poin_tagihan_listrik 
+        + $pengajuan->poin_tagihan_pdam 
+        + $pengajuan->poin_pbb 
+        + $pengajuan->poin_jumlah_motor 
+        + $pengajuan->poin_jumlah_mobil 
+        + $pengajuan->poin_kepemilikan_kartu;
+@endphp
+
+@section('content')
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Detail Pengajuan Penurunan UKT</h1>
+        <a href="{{ route('list-pengajuan') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi Pengajuan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>ID Pemohon</strong></td>
+                                    <td>: {{ $pengajuan->kode }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nama Mahasiswa</strong></td>
+                                    <td>: {{ $pengajuan->mahasiswa->nama_lengkap }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NIM</strong></td>
+                                    <td>: {{ $pengajuan->mahasiswa->nim }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Program Studi</strong></td>
+                                    <td>: {{ $pengajuan->mahasiswa->prodi->nama }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UKT Saat Ini</strong></td>
+                                    <td>: {{ $pengajuan->mahasiswa->formatted_ukt_awal }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status</strong></td>
+                                    <td>: <span class="badge badge-info">{{ $pengajuan->status_label }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tanggal Pengajuan</strong></td>
+                                    <td>: {{ $pengajuan->created_at->format('d F Y') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Penghasilan Ayah</strong></td>
+                                    <td>: {{ $pengajuan->formatted_penghasilan_ayah }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pekerjaan Ayah</strong></td>
+                                    <td>: {{ $pengajuan->pekerjaan_ayah }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Penghasilan Ibu</strong></td>
+                                    <td>: {{ $pengajuan->formatted_penghasilan_ibu }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pekerjaan Ibu</strong></td>
+                                    <td>: {{ $pengajuan->pekerjaan_ibu }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Total Penghasilan</strong></td>
+                                    <td>: <strong>{{ $pengajuan->formatted_total_gaji }}</strong> <span class="badge badge-primary ml-1">{{ $pengajuan->poin_total_gaji }} Poin</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi Keluarga & Ekonomi</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Jumlah Tanggungan</strong></td>
+                                    <td>: {{ $pengajuan->jumlah_tanggungan }} orang <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_tanggungan }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Daya Listrik</strong></td>
+                                    <td>: {{ $pengajuan->daya_listrik }} VA <span class="badge badge-primary ml-1">{{ $pengajuan->poin_daya_listrik }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tagihan Listrik</strong></td>
+                                    <td>: Rp {{ number_format($pengajuan->tagihan_listrik, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_tagihan_listrik }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tagihan PDAM</strong></td>
+                                    <td>: Rp {{ number_format($pengajuan->tagihan_pdam, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_tagihan_pdam }} Poin</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>PBB</strong></td>
+                                    <td>: Rp {{ number_format($pengajuan->pbb, 0, ',', '.') }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_pbb }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Jumlah Motor</strong></td>
+                                    <td>: {{ $pengajuan->jumlah_motor }} unit <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_motor }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Jumlah Mobil</strong></td>
+                                    <td>: {{ $pengajuan->jumlah_mobil }} unit <span class="badge badge-primary ml-1">{{ $pengajuan->poin_jumlah_mobil }} Poin</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kepemilikan Kartu</strong></td>
+                                    <td>: {{ $pengajuan->kepemilikan_kartu }} <span class="badge badge-primary ml-1">{{ $pengajuan->poin_kepemilikan_kartu }} Poin</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Alasan Pengajuan</h6>
+                </div>
+                <div class="card-body">
+                    <p>{{ $pengajuan->alasan_pengajuan }}</p>
+
+                    @if($pengajuan->pernyataan_teman)
+                    <hr>
+                    <h6><strong>Pernyataan Teman:</strong></h6>
+                    <p>{{ $pengajuan->pernyataan_teman }}</p>
+                    @endif
+
+                    @if($pengajuan->link_drive)
+                    <hr>
+                    <h6><strong>Link Drive:</strong></h6>
+                    <a href="{{ $pengajuan->link_drive }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Buka Link Drive
+                    </a>
+                    @endif
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Dokumen Pendukung</h6>
+                </div>
+                <div class="card-body">
+                    @if($pengajuan->dokumenPendukung->count() > 0)
+                        <div class="row">
+                            @foreach($pengajuan->dokumenPendukung as $dokumen)
+                            <div class="col-md-4 mb-3">
+                                <div class="card border">
+                                    <div class="card-header bg-light">
+                                        <h6 class="card-title mb-0">{{ $dokumen->jenis_label }}</h6>
+                                        <small class="text-muted">{{ $dokumen->file_size }}</small>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        @if($dokumen->isImage())
+                                            <img src="{{ $dokumen->url }}" class="img-fluid mb-2" style="max-height: 150px;">
+                                        @elseif($dokumen->isPdf())
+                                            <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                                        @else
+                                            <i class="fas fa-file fa-3x text-secondary mb-2"></i>
+                                        @endif
+                                        <br>
+                                        <a href="{{ $dokumen->url }}" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Lihat
+                                        </a>
+                                    </div>
+                                    @if($dokumen->keterangan)
+                                    <div class="card-footer">
+                                        <small>{{ $dokumen->keterangan }}</small>
+                                    </div>
+                                    @endif
+                                    @if($dokumen->jenis_dokumen === 'foto_rumah' && $pengajuan->status === 'dinilai_admin')
+                                    <div class="card-footer bg-warning bg-opacity-10">
+                                        <label class="mb-1 small font-weight-bold text-warning">
+                                            <i class="fas fa-star"></i> Skor Kondisi Rumah (Maks. 80)
+                                        </label>
+                                        <input type="number"
+                                            class="form-control form-control-sm text-center font-weight-bold"
+                                            id="poin_kondisi_rumah"
+                                            name="poin_kondisi_rumah"
+                                            min="0" max="80"
+                                            value="{{ old('poin_kondisi_rumah', $existingPoint->poin_kondisi_rumah ?? 0) }}"
+                                            placeholder="0 - 80"
+                                            oninput="resetVerifikasiRumah()">
+                                        <small class="text-muted">Nilai manual dari inspeksi foto rumah</small>
+                                        <div class="mt-2">
+                                            <button type="button"
+                                                id="btn_nilai_rumah"
+                                                class="btn btn-warning btn-sm btn-block font-weight-bold"
+                                                onclick="verifikasiNilaiRumah()">
+                                                <i class=""></i> Nilai
+                                            </button>
+                                            <div id="verifikasi_rumah_status" class="mt-1" style="display:none;">
+                                                <small class="text-success font-weight-bold">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    Skor <strong id="verifikasi_skor_text">0</strong> telah diverifikasi &amp; terjumlah otomatis.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Tidak ada dokumen pendukung yang diupload.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            @if($pengajuan->status === 'diajukan')
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-warning text-white">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-clipboard-check"></i> Form Validasi Data / Berkas</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            Pengajuan ini sedang dalam tahap <strong>Validasi Data & Berkas</strong>. Silakan periksa kelengkapan berkas mahasiswa.
+                        </div>
+
+                        <form action="{{ route('list-pengajuan.approve', $pengajuan->kode) }}" method="POST" class="mb-3">
+                            @csrf
+                            <button type="submit" class="btn btn-success btn-block font-weight-bold py-2" onclick="return confirm('Yakin ingin memverifikasi & menerima data pengajuan ini?')">
+                                <i class="fas fa-check-circle mr-1"></i> Terima / Verifikasi Data
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-danger btn-block font-weight-bold py-2" data-toggle="modal" data-target="#modalTolakDetail">
+                            <i class="fas fa-times-circle mr-1"></i> Tolak Pengajuan
+                        </button>
+
+                        <!-- Modal Tolak Pengajuan -->
+                        <div class="modal fade" id="modalTolakDetail" tabindex="-1" role="dialog" aria-labelledby="modalTolakDetailLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <form action="{{ route('list-pengajuan.reject', $pengajuan->kode) }}" method="POST">
+                                        @csrf
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title" id="modalTolakDetailLabel">
+                                                <i class="fas fa-exclamation-triangle"></i> Tolak Pengajuan {{ $pengajuan->kode }}
+                                            </h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body text-left">
+                                            <p class="text-dark"><strong>Mahasiswa:</strong> {{ $pengajuan->mahasiswa->nama_lengkap }} ({{ $pengajuan->mahasiswa->nim }})</p>
+                                            <div class="form-group">
+                                                <label for="alasan_penolakan_detail" class="font-weight-bold text-dark">Alasan Penolakan <span class="text-danger">*</span></label>
+                                                <textarea name="alasan_penolakan" id="alasan_penolakan_detail" class="form-control" rows="4" placeholder="Tuliskan alasan penolakan..." required></textarea>
+                                                <small class="form-text text-muted">Alasan ini akan ditampilkan kepada mahasiswa.</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="fas fa-paper-plane"></i> Kirim Penolakan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @elseif($pengajuan->status === 'diterima_keuangan')
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-info text-white">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-clock"></i> Status Validasi</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Data pengajuan ini telah <strong>Diterima & Diverifikasi</strong> oleh Keuangan.
+                            <hr>
+                            Saat ini pengajuan sedang menunggu proses <strong>Penilaian dari Kajur / Admin Jurusan</strong>. Form penilaian Keuangan akan dapat diisi setelah Kajur memberikan penilaian.
+                        </div>
+                    </div>
+                </div>
+            @elseif($pengajuan->status === 'dinilai_admin')
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Form Penilaian Keuangan</h6>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('list-pengajuan.validasi', $pengajuan->kode) }}" method="POST" id="validasiForm">
+                            @csrf
+                            <input type="hidden" name="pengajuan_id" value="{{ $pengajuan->id }}">
+                            <input type="hidden" name="poin_kondisi_rumah" id="hidden_poin_kondisi_rumah" value="{{ $existingPoint->poin_kondisi_rumah ?? 0 }}">
+
+                            <h6 class="text-primary mb-3"><i class="fas fa-calculator"></i> Penilaian Poin Keuangan</h6>
+
+                            @php
+                                $totalNilaiSistem = $pengajuan->poin_total_gaji + $pengajuan->poin_jumlah_tanggungan + $pengajuan->poin_daya_listrik + $pengajuan->poin_tagihan_listrik + $pengajuan->poin_tagihan_pdam + $pengajuan->poin_pbb + $pengajuan->poin_jumlah_motor + $pengajuan->poin_jumlah_mobil + $pengajuan->poin_kepemilikan_kartu;
+                                $poinRumahExisting = $existingPoint->poin_kondisi_rumah ?? 0;
+                                $totalDenganRumah = $totalNilaiSistem + $poinRumahExisting;
+                            @endphp
+
+                            <div class="form-group">
+                                <label><strong>Nilai dari Sistem</strong></label>
+                                <div class="d-flex align-items-center">
+                                    <input type="number" class="form-control bg-light font-weight-bold text-center mr-2"
+                                        id="poin_wawancara"
+                                        name="poin_wawancara"
+                                        value="{{ $totalDenganRumah }}"
+                                        readonly>
+                                </div>
+                                <small class="text-muted" id="total_label_detail">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                    <strong>Otomatis: nilai sistem ({{ $totalNilaiSistem }}) + skor kondisi rumah</strong>
+                                </small>
+                            </div>
+
+                            <hr>
+
+                            <input type="hidden" name="hasil_wawancara" value="-">
+
+                            <div class="form-group">
+                                <label for="status"><strong>Rekomendasi</strong></label>
+                                <select class="form-control" id="status" name="status" required>
+                                    <option value="">Pilih Rekomendasi</option>
+                                    <option value="disetujui|1 Semester">Disetujui Penurunan 1 Semester</option>
+                                    <option value="disetujui|2 Semester">Disetujui Penurunan 2 Semester</option>
+                                    <option value="disetujui|3 Semester">Disetujui Penurunan 3 Semester</option>
+                                    <option value="disetujui|4 Semester">Disetujui Penurunan 4 Semester</option>
+                                    <option value="disetujui|Sampai Lulus">Disetujui Sampai Lulus</option>
+                                    <option value="disarankan_cicilan|1 Semester">UKT tetap / diangsur</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="rekomendasi_ukt"><strong>Keputusan Penurunan Tarif UKT</strong></label>
+                                <select class="form-control" id="rekomendasi_ukt" name="rekomendasi_ukt" required>
+                                    <option value="">Pilih Tarif UKT</option>
+                                    <option value="0">UKT Tetap (Tidak Ada Penurunan)</option>
+                                    <option value="500000">500.000</option>
+                                    <option value="1000000">1.000.000</option>
+                                    <option value="2000000">2.000.000</option>
+                                    <option value="3000000">3.000.000</option>
+                                    <option value="4000000">4.000.000</option>
+                                    <option value="5000000">5.000.000</option>
+                                    <option value="6000000">6.000.000</option>
+                                    <option value="7000000">7.000.000</option>
+                                </select>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <small>
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>UKT Saat Ini:</strong> {{ $pengajuan->mahasiswa->formatted_ukt_awal }}<br>
+                                    <strong>Validator:</strong> {{ Auth::user()->name }} ({{ ucfirst(Auth::user()->role) }})
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-success btn-block">
+                                    <i class="fas fa-save"></i> Simpan Hasil Penilaian
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-secondary text-white">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-check-double"></i> Status Pengajuan</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-secondary mb-0">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Pengajuan ini berstatus: <strong>{{ $pengajuan->status_label }}</strong>.
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if($pengajuan->hasilValidasi->count() > 0)
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Riwayat Validasi</h6>
+                </div>
+                <div class="card-body">
+                    @foreach($pengajuan->hasilValidasi as $validasi)
+                    <div class="card shadow-sm border-left-primary mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="font-weight-bold mb-1" style="color: #2e3d55;">{{ $validasi->validator_name }}</h6>
+                            <small class="text-muted d-block mb-2">{{ $validasi->validator_role }} • {{ $validasi->created_at->format('d M Y H:i') }}</small>
+                            <hr class="my-2">
+                            <p class="mb-1 text-dark"><strong>Wawancara:</strong> {{ $validasi->hasil_wawancara ?? '-' }}</p>
+                            <p class="mb-1 text-dark"><strong>Rekomendasi UKT:</strong> {{ $validasi->formatted_rekomendasi_ukt }}</p>
+                            <p class="mb-1 text-dark">
+                                <strong>Status:</strong>
+                                <span class="badge badge-{{ $validasi->status === 'disetujui' ? 'success' : 'warning' }} px-2 py-1 font-weight-bold">
+                                    {{ $validasi->status_label }}
+                                </span>
+                            </p>
+                            @if($validasi->persentase_penurunan > 0)
+                            <p class="text-success font-weight-bold mb-0 mt-1 small">
+                                <i class="fas fa-arrow-down text-success"></i> Penurunan {{ $validasi->formatted_persentase_penurunan }}
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            @php
+                $poinRumahSAW = $existingPoint->poin_kondisi_rumah ?? 0;
+
+                // Definisi kriteria: [label, nilai, max, bobot, tipe, icon]
+                $sawCriteria = [
+                    ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
+                    ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
+                    ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
+                    ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                    ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
+                    ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
+                    ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                    ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
+                ];
+
+                $sawScore = 0;
+                foreach ($sawCriteria as &$c) {
+                    if (isset($c['min']) && $c['min'] < 0) {
+                        $c['normalized'] = round(($c['max'] - $c['nilai']) / ($c['max'] - $c['min']), 4);
+                    } else {
+                        if ($c['max'] == 0) { $c['normalized'] = 0; continue; }
+                        if ($c['tipe'] === 'cost') {
+                            $c['normalized'] = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                        } else {
+                            $c['normalized'] = round($c['nilai'] / $c['max'], 4);
+                        }
+                    }
+                    $c['weighted'] = round($c['normalized'] * $c['bobot'], 4);
+                    $sawScore += $c['weighted'];
+                }
+                unset($c);
+                $sawScore = round($sawScore, 4);
+                $sawPersen = round($sawScore * 100, 1);
+
+                if ($sawScore >= 0.70) {
+                    $sawLabel = 'Sangat Layak';
+                    $sawBadge = 'success';
+                    $sawIcon = 'fa-check-circle';
+                    $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
+                    $sawRecTariff = 'Rp 500.000';
+                } elseif ($sawScore >= 0.50) {
+                    $sawLabel = 'Layak';
+                    $sawBadge = 'primary';
+                    $sawIcon = 'fa-thumbs-up';
+                    $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                    $sawRecTariff = 'Rp 2.000.000';
+                } elseif ($sawScore >= 0.30) {
+                    $sawLabel = 'Kurang Layak';
+                    $sawBadge = 'warning';
+                    $sawIcon = 'fa-exclamation-circle';
+                    $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                    $sawRecTariff = 'Rp 3.000.000';
+                } else {
+                    $sawLabel = 'Tidak Layak';
+                    $sawBadge = 'danger';
+                    $sawIcon = 'fa-times-circle';
+                    $sawRecStatus = 'UKT Tetap / diangsur';
+                    $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                }
+            @endphp
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calculator"></i> Hasil SAW
+                        <small class="text-muted font-weight-normal">(Simple Additive Weighting)</small>
+                    </h6>
+                    <span id="saw_badge_header" class="badge badge-{{ $sawBadge }} px-3 py-2">
+                        <i id="saw_icon_header" class="fas {{ $sawIcon }}"></i> <span id="saw_label_header">{{ $sawLabel }}</span>
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    {{-- Score Bar --}}
+                    <div class="text-center mb-3">
+                        <h3 id="saw_percent_big" class="font-weight-bold text-{{ $sawBadge }}">{{ $sawPersen }}%</h3>
+                        <div class="progress" style="height: 18px; border-radius: 9px;">
+                            <div id="saw_progress_bar" class="progress-bar bg-{{ $sawBadge }} progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: {{ $sawPersen }}%;"
+                                 aria-valuenow="{{ $sawPersen }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ $sawPersen }}%
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Skor akhir SAW: <strong id="saw_total_score">{{ number_format($sawScore, 4) }}</strong> / 1.00</small>
+                    </div>
+
+                    <hr>
+
+                    {{-- Tabel Rincian Kriteria --}}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered small">
+                            <thead class="thead-light">
+                                <tr class="text-center">
+                                    <th>Kriteria</th>
+                                    <th>Poin</th>
+                                    <th>Bobot</th>
+                                    <th>Normal.</th>
+                                    <th>Nilai Terbobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($sawCriteria as $c)
+                                <tr class="text-center">
+                                    <td class="text-left"><i class="fas {{ $c['icon'] }} text-muted mr-1"></i> {{ $c['label'] }}</td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_val_rumah" @endif>{{ $c['nilai'] }}</td>
+                                    <td>{{ number_format($c['bobot'] * 100, 0) }}%</td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_norm_rumah" @endif>
+                                        <span class="badge badge-{{ $c['normalized'] >= 0.5 ? 'success' : ($c['normalized'] >= 0.25 ? 'warning' : 'danger') }}">
+                                            {{ number_format($c['normalized'] * 100, 1) }}%
+                                        </span>
+                                    </td>
+                                    <td @if($c['label'] === 'Kondisi Rumah') id="saw_weight_rumah" @endif><strong>{{ number_format($c['weighted'], 4) }}</strong></td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="table-info">
+                                <tr class="text-center font-weight-bold">
+                                    <td colspan="4" class="text-right">Skor SAW Total</td>
+                                    <td id="saw_total_score_foot">{{ number_format($sawScore, 4) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {{-- Section Rekomendasi Penurunan UKT --}}
+                    <div class="alert alert-info mt-3 border-left-info shadow-sm">
+                        <h6 class="font-weight-bold text-info"><i class="fas fa-magic"></i> Rekomendasi Hasil Perhitungan SAW:</h6>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Keputusan:</small>
+                                <span class="h6 font-weight-bold text-dark" id="saw_rec_status">{{ $sawRecStatus }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Tarif UKT Baru:</small>
+                                <span class="h6 font-weight-bold text-success" id="saw_rec_tariff">{{ $sawRecTariff }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Skala Interpretasi --}}
+                    <div class="mt-2">
+                        <small class="text-muted"><i class="fas fa-info-circle"></i> Skala interpretasi:</small>
+                        <div class="d-flex justify-content-between mt-1 flex-wrap" style="gap:4px;">
+                            <span class="badge badge-danger px-2 py-1">< 30% — Tidak Layak</span>
+                            <span class="badge badge-warning px-2 py-1">30–49% — Kurang Layak</span>
+                            <span class="badge badge-primary px-2 py-1">50–69% — Layak</span>
+                            <span class="badge badge-success px-2 py-1">≥ 70% — Sangat Layak</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{-- ===== END CARD HASIL SAW ===== --}}
+
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    const TOTAL_NILAI_SISTEM = {{ $totalNilaiSistem }};
+    let sudahDiverifikasi = false;
+
+    const sawData = {
+        totalGaji: { nilai: {{ $pengajuan->poin_total_gaji }}, max: 80, bobot: 0.25, tipe: 'cost' },
+        tanggungan: { nilai: {{ $pengajuan->poin_jumlah_tanggungan }}, max: 80, bobot: 0.15, tipe: 'cost' },
+        dayaListrik: { nilai: {{ $pengajuan->poin_daya_listrik }}, max: 40, bobot: 0.08, tipe: 'cost' },
+        tagihanListrik: { nilai: {{ $pengajuan->poin_tagihan_listrik }}, max: 90, bobot: 0.08, tipe: 'cost' },
+        tagihanPdam: { nilai: {{ $pengajuan->poin_tagihan_pdam }}, max: 100, bobot: 0.05, tipe: 'cost' },
+        pbb: { nilai: {{ $pengajuan->poin_pbb }}, max: 100, bobot: 0.05, tipe: 'cost' },
+        motor: { nilai: {{ $pengajuan->poin_jumlah_motor }}, max: 45, bobot: 0.07, tipe: 'cost' },
+        mobil: { nilai: {{ $pengajuan->poin_jumlah_mobil }}, max: 80, bobot: 0.07, tipe: 'cost' },
+        kondisiRumah: { nilai: 0, max: 100, bobot: 0.10, tipe: 'benefit' },
+        kepemilikanKartu: { nilai: {{ $pengajuan->poin_kepemilikan_kartu }}, min: -15, max: 0, bobot: 0.10, tipe: 'cost' }
+    };
+
+    function hitungSAW() {
+        let totalSAWScore = 0;
+
+        // Hitung masing-masing kriteria
+        for (const [key, c] of Object.entries(sawData)) {
+            let normalized = 0;
+            if (c.min !== undefined && c.min < 0) {
+                normalized = (c.max - c.nilai) / (c.max - c.min);
+            } else if (c.max > 0) {
+                if (c.tipe === 'cost') {
+                    normalized = (c.max - c.nilai) / c.max;
+                } else {
+                    normalized = c.nilai / c.max;
+                }
+            }
+            normalized = Math.round(normalized * 10000) / 10000;
+            const weighted = Math.round(normalized * c.bobot * 10000) / 10000;
+            totalSAWScore += weighted;
+
+            // Jika ini kondisi rumah, update baris tabel Kondisi Rumah secara dinamis
+            if (key === 'kondisiRumah') {
+                const valRumahCell = document.getElementById('saw_val_rumah');
+                const normRumahCell = document.getElementById('saw_norm_rumah');
+                const weightRumahCell = document.getElementById('saw_weight_rumah');
+
+                if (valRumahCell) valRumahCell.textContent = c.nilai;
+                if (normRumahCell) {
+                    const pct = Math.round(normalized * 1000) / 10;
+                    const badgeClass = normalized >= 0.5 ? 'success' : (normalized >= 0.25 ? 'warning' : 'danger');
+                    normRumahCell.innerHTML = `<span class="badge badge-${badgeClass}">${pct}%</span>`;
+                }
+                if (weightRumahCell) {
+                    weightRumahCell.innerHTML = `<strong>${weighted.toFixed(4)}</strong>`;
+                }
+            }
+        }
+
+        totalSAWScore = Math.round(totalSAWScore * 10000) / 10000;
+        const sawPersen = Math.round(totalSAWScore * 1000) / 10;
+
+        // Update overall display
+        const totalScoreSpan = document.getElementById('saw_total_score');
+        const totalScoreFoot = document.getElementById('saw_total_score_foot');
+        const percentBig = document.getElementById('saw_percent_big');
+        const progressBar = document.getElementById('saw_progress_bar');
+        const badgeHeader = document.getElementById('saw_badge_header');
+        const iconHeader = document.getElementById('saw_icon_header');
+        const labelHeader = document.getElementById('saw_label_header');
+
+        if (totalScoreSpan) totalScoreSpan.textContent = totalSAWScore.toFixed(4);
+        if (totalScoreFoot) totalScoreFoot.textContent = totalSAWScore.toFixed(4);
+        if (percentBig) percentBig.textContent = `${sawPersen}%`;
+        
+        if (progressBar) {
+            progressBar.style.width = `${sawPersen}%`;
+            progressBar.textContent = `${sawPersen}%`;
+            progressBar.setAttribute('aria-valuenow', sawPersen);
+        }
+
+        // Tentukan kelayakan
+        let label = 'Tidak Layak';
+        let badge = 'danger';
+        let icon = 'fa-times-circle';
+        let recStatus = 'UKT Tetap / diangsur';
+        let recTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+
+        if (totalSAWScore >= 0.70) {
+            label = 'Sangat Layak';
+            badge = 'success';
+            icon = 'fa-check-circle';
+            recStatus = 'Disetujui Penurunan Sampai Lulus';
+            recTariff = 'Rp 500.000';
+        } else if (totalSAWScore >= 0.50) {
+            label = 'Layak';
+            badge = 'primary';
+            icon = 'fa-thumbs-up';
+            recStatus = 'Disetujui Penurunan 2 Semester';
+            recTariff = 'Rp 2.000.000';
+        } else if (totalSAWScore >= 0.30) {
+            label = 'Kurang Layak';
+            badge = 'warning';
+            icon = 'fa-exclamation-circle';
+            recStatus = 'Disetujui Penurunan 1 Semester';
+            recTariff = 'Rp 3.000.000';
+        }
+
+        // Update header badge classes & text
+        if (badgeHeader) {
+            badgeHeader.className = `badge badge-${badge} px-3 py-2`;
+        }
+        if (iconHeader) {
+            iconHeader.className = `fas ${icon}`;
+        }
+        if (labelHeader) {
+            labelHeader.textContent = label;
+        }
+        if (percentBig) {
+            percentBig.className = `font-weight-bold text-${badge}`;
+        }
+        if (progressBar) {
+            progressBar.className = `progress-bar bg-${badge} progress-bar-striped progress-bar-animated`;
+        }
+
+        // Update Rekomendasi alert
+        const recStatusSpan = document.getElementById('saw_rec_status');
+        const recTariffSpan = document.getElementById('saw_rec_tariff');
+
+        if (recStatusSpan) recStatusSpan.textContent = recStatus;
+        if (recTariffSpan) recTariffSpan.textContent = recTariff;
+    }
+
+    function hitungTotalPoin() {
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        const inputTotal = document.getElementById('poin_wawancara');
+        const labelDetail = document.getElementById('total_label_detail');
+        const hiddenRumah = document.getElementById('hidden_poin_kondisi_rumah');
+
+        if (!inputRumah || !inputTotal) return;
+
+        let skorRumah = parseInt(inputRumah.value) || 0;
+        if (skorRumah < 0) { skorRumah = 0; inputRumah.value = 0; }
+        if (skorRumah > 100) { skorRumah = 100; inputRumah.value = 100; }
+
+        const totalBaru = TOTAL_NILAI_SISTEM + skorRumah;
+        inputTotal.value = totalBaru;
+
+        if (hiddenRumah) {
+            hiddenRumah.value = skorRumah;
+        }
+
+        if (labelDetail) {
+            labelDetail.innerHTML = `<i class="fas fa-info-circle text-primary"></i> <strong>Otomatis: nilai sistem (${TOTAL_NILAI_SISTEM}) + skor kondisi rumah (${skorRumah}) = ${totalBaru}</strong>`;
+        }
+
+        // Update kriteria kondisi rumah di sawData dan hitung ulang SAW
+        sawData.kondisiRumah.nilai = skorRumah;
+        hitungSAW();
+    }
+
+    function verifikasiNilaiRumah() {
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        const btnNilai = document.getElementById('btn_nilai_rumah');
+        const statusDiv = document.getElementById('verifikasi_rumah_status');
+        const skorText = document.getElementById('verifikasi_skor_text');
+
+        if (!inputRumah) return;
+
+        let skor = parseInt(inputRumah.value) || 0;
+        if (skor < 0) { skor = 0; inputRumah.value = 0; }
+        if (skor > 100) { skor = 100; inputRumah.value = 100; }
+
+        // Update total & SAW
+        hitungTotalPoin();
+
+        // Tampilkan status verifikasi
+        if (statusDiv) {
+            statusDiv.style.display = 'block';
+        }
+        if (skorText) {
+            skorText.textContent = skor;
+        }
+
+        // Ubah tampilan tombol jadi verified
+        if (btnNilai) {
+            btnNilai.classList.remove('btn-warning');
+            btnNilai.classList.add('btn-success');
+            btnNilai.innerHTML = '<i class="fas fa-check-double"></i> Terverifikasi';
+            btnNilai.disabled = true;
+        }
+
+        // Lock input supaya tidak berubah sembarangan
+        inputRumah.style.border = '2px solid #28a745';
+        sudahDiverifikasi = true;
+    }
+
+    function resetVerifikasiRumah() {
+        const btnNilai = document.getElementById('btn_nilai_rumah');
+        const statusDiv = document.getElementById('verifikasi_rumah_status');
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+
+        // Reset tombol
+        if (btnNilai && sudahDiverifikasi) {
+            btnNilai.classList.remove('btn-success');
+            btnNilai.classList.add('btn-warning');
+            btnNilai.innerHTML = '<i class="fas fa-check-square"></i> Nilai';
+            btnNilai.disabled = false;
+        }
+
+        // Sembunyikan status
+        if (statusDiv) {
+            statusDiv.style.display = 'none';
+        }
+
+        // Reset border
+        if (inputRumah) {
+            inputRumah.style.border = '';
+        }
+
+        sudahDiverifikasi = false;
+
+        // Tetap hitung total meski belum diverifikasi
+        hitungTotalPoin();
+    }
+
+    // Jalankan sekali saat halaman dimuat untuk sinkronisasi awal
+    document.addEventListener('DOMContentLoaded', function () {
+        hitungTotalPoin();
+
+        // Jika sudah ada nilai tersimpan sebelumnya, auto-verifikasi
+        const inputRumah = document.getElementById('poin_kondisi_rumah');
+        if (inputRumah && parseInt(inputRumah.value) > 0) {
+            verifikasiNilaiRumah();
+        }
+    });
+</script>
+@endpush
+
+@endsection
