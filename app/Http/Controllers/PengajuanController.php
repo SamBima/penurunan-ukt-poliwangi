@@ -891,14 +891,14 @@ class PengajuanController extends Controller
                     // 1. Calculate SAW score
                     $poinRumahSAW = 0; // bulk default
                     $sawCriteria = [
-                        ['label'=>'Penghasilan Orang Tua', 'nilai'=>(float)$pengajuan->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Tanggungan',     'nilai'=>(int)$pengajuan->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit'],
-                        ['label'=>'Daya Listrik',           'nilai'=>(int)$pengajuan->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'Tagihan Listrik',        'nilai'=>(float)$pengajuan->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'Tagihan PDAM',           'nilai'=>(float)$pengajuan->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'PBB',                   'nilai'=>(float)$pengajuan->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Motor',           'nilai'=>(int)$pengajuan->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Mobil',           'nilai'=>(int)$pengajuan->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Penghasilan Orang Tua', 'nilai'=>(float)$pengajuan->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.25, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Tanggungan',     'nilai'=>(int)$pengajuan->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.15, 'tipe'=>'benefit'],
+                        ['label'=>'Daya Listrik',           'nilai'=>(int)$pengajuan->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.08, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan Listrik',        'nilai'=>(float)$pengajuan->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.08, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan PDAM',           'nilai'=>(float)$pengajuan->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['label'=>'PBB',                   'nilai'=>(float)$pengajuan->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.05, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Motor',           'nilai'=>(int)$pengajuan->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.07, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Mobil',           'nilai'=>(int)$pengajuan->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.07, 'tipe'=>'cost'],
                         ['label'=>'Kondisi Rumah',          'nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost'],
                         ['label'=>'Kepemilikan Kartu',      'nilai'=>(int)abs($pengajuan->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit'],
                     ];
@@ -1121,14 +1121,14 @@ class PengajuanController extends Controller
             $poinRumahSAW = $poinKeuangan->poin_kondisi_rumah ?? 0;
 
             $sawCriteria = [
-                ['nilai'=>(float)$item->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(int)$item->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit'],
-                ['nilai'=>(int)$item->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(float)$item->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(float)$item->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(float)$item->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(int)$item->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost'],
-                ['nilai'=>(int)$item->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.25, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.15, 'tipe'=>'benefit'],
+                ['nilai'=>(int)$item->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.08, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.08, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.05, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.05, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.07, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.07, 'tipe'=>'cost'],
                 ['nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost'],
                 ['nilai'=>(int)abs($item->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit'],
             ];
