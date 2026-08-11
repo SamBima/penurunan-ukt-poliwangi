@@ -4,7 +4,10 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Pengajuan Penurunan UKT</h1>
-        <a href="{{ route('list-pengajuan') }}" class="btn btn-secondary">
+        @php
+            $backUrl = (request('source') === 'arsip') ? route('arsip-pengajuan') : route('list-pengajuan');
+        @endphp
+        <a href="{{ $backUrl }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>

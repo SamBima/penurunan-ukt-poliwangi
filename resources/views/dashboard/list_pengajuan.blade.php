@@ -28,7 +28,7 @@
             @endphp
             <form method="GET" action="{{ $formAction }}">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label for="search">Pencarian</label>
                             <input type="text" class="form-control" id="search" name="search"
@@ -39,7 +39,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="semester">Semester/Tahun Akademik</label>
-                            <select class="form-control" id="semester" name="semester">
+                            <select class="form-control" id="semester" name="semester" onchange="this.form.submit()">
                                 <option value="">Semua Semester</option>
                                 @foreach($semesterOptions as $key => $label)
                                     <option value="{{ $key }}" {{ request('semester') == $key ? 'selected' : '' }}>
@@ -49,7 +49,19 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-5">
+                    @if(isset($isHasilAkhir) && $isHasilAkhir)
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="sort">Urutkan Perangkingan SAW</label>
+                            <select class="form-control" id="sort" name="sort" onchange="this.form.submit()">
+                                <option value="saw_desc" {{ request('sort', 'saw_desc') == 'saw_desc' ? 'selected' : '' }}>Perangkingan SAW (Tertinggi)</option>
+                                <option value="saw_asc" {{ request('sort') == 'saw_asc' ? 'selected' : '' }}>Perangkingan SAW (Terendah)</option>
+                                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru (Tanggal)</option>
+                            </select>
+                        </div>
+                    </div>
+                    @endif
+                    <div class="{{ (isset($isHasilAkhir) && $isHasilAkhir) ? 'col-md-3' : 'col-md-5' }}">
                         <div class="form-group">
                             <label>&nbsp;</label>
                             <div>
@@ -97,11 +109,14 @@
                         <tr>
                             <th width="5%">No.</th>
                             <th width="12%">ID Pemohon</th>
-                            <th width="18%">Nama Mahasiswa</th>
-                            <th width="10%">NIM</th>
+                            <th width="20%">Nama Mahasiswa</th>
+                            <th width="11%">NIM</th>
                             <th width="12%">Semester/Tahun</th>
+                            @if(isset($isHasilAkhir) && $isHasilAkhir)
+                                <th width="16%">Rangking &amp; Skor SAW</th>
+                            @endif
                             <th width="12%">Status</th>
-                            <th width="31%">Aksi</th>
+                            <th width="12%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -136,6 +151,20 @@
                                 @endphp
                                 <span class="badge badge-secondary">{{ $semester }}/{{ $tahun }}</span>
                             </td>
+                            @if(isset($isHasilAkhir) && $isHasilAkhir)
+                            <td>
+                                @if(isset($item->saw_rank))
+                                    <span class="badge badge-success px-2 py-1 mb-1 font-weight-bold">
+                                        <i class="fas fa-trophy text-warning mr-1"></i> Rangking #{{ $item->saw_rank }}
+                                    </span>
+                                    <div class="small font-weight-bold text-info">
+                                        Skor: {{ number_format($item->saw_score, 4) }} ({{ round($item->saw_score * 100, 1) }}%)
+                                    </div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            @endif
                             <td>
                                 @php
                                     $badgeClass = '';
@@ -188,24 +217,27 @@
                                 <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
                             </td>
                             <td>
-                                @if(Auth::user()->role === 'keuangan' && $item->status === 'diajukan')
-                                    <div class="btn-group mb-2" role="group">
+                                <div class="btn-group flex-wrap mb-1" role="group" style="gap: 4px;">
+                                    @if(Auth::user()->role === 'keuangan' && $item->status === 'diajukan')
                                         <form action="{{ route('list-pengajuan.approve', $item->kode) }}" method="POST" style="display: inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Yakin ingin menerima pengajuan ini?')">
                                                 <i class="fas fa-check"></i> Terima
                                             </button>
                                         </form>
-                                        <button type="button" class="btn btn-sm btn-danger ml-1" data-toggle="modal" data-target="#modalTolak{{ $item->kode }}">
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modalTolak{{ $item->kode }}">
                                             <i class="fas fa-times"></i> Tolak
                                         </button>
-                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : ((isset($isHasilAkhir) && $isHasilAkhir) ? 'hasil_akhir' : 'list')]) }}" 
-                                            class="btn btn-sm btn-outline-primary ml-1" 
-                                            title="Lihat Detail">
-                                             <i class="fas fa-eye"></i> Lihat Form & Berkas
-                                         </a>
-                                    </div>
+                                    @endif
 
+                                    <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : ((isset($isHasilAkhir) && $isHasilAkhir) ? 'hasil_akhir' : 'list')]) }}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Lihat Form & Penilaian Detail">
+                                        <i class="fas fa-file-alt"></i> Detail & Form
+                                    </a>
+                                </div>
+
+                                @if(Auth::user()->role === 'keuangan' && $item->status === 'diajukan')
                                     <!-- Modal Tolak Pengajuan -->
                                     <div class="modal fade" id="modalTolak{{ $item->kode }}" tabindex="-1" role="dialog" aria-labelledby="modalTolakLabel{{ $item->kode }}" aria-hidden="true">
                                         <div class="modal-dialog" role="document">
@@ -237,14 +269,6 @@
                                                 </form>
                                             </div>
                                         </div>
-                                    </div>
-                                @elseif($item->status !== 'diajukan' || Auth::user()->role !== 'keuangan')
-                                    <div class="btn-group mb-2" role="group">
-                                        <a href="{{ route('list-pengajuan.show', ['kode' => $item->kode, 'source' => (isset($isArsip) && $isArsip) ? 'arsip' : ((isset($isHasilAkhir) && $isHasilAkhir) ? 'hasil_akhir' : 'list')]) }}"
-                                           class="btn btn-sm btn-outline-primary"
-                                           title="Lihat Detail">
-                                            <i class="fas fa-eye"></i> Lihat Form & Berkas
-                                        </a>
                                     </div>
                                 @endif
                                 <div class="mt-1">

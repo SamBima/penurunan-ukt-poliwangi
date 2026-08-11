@@ -44,7 +44,7 @@ class DokumenPendukung extends Model
 
     public function getUrlAttribute()
     {
-        return Storage::url($this->path);
+        return asset('storage/' . $this->path);
     }
 
     public function getFileNameAttribute()
@@ -70,8 +70,8 @@ class DokumenPendukung extends Model
 
     public function getFileSizeAttribute()
     {
-        if (Storage::exists($this->path)) {
-            $bytes = Storage::size($this->path);
+        if (Storage::disk('public')->exists($this->path)) {
+            $bytes = Storage::disk('public')->size($this->path);
             $units = ['B', 'KB', 'MB', 'GB'];
 
             for ($i = 0; $bytes > 1024; $i++) {
@@ -89,8 +89,8 @@ class DokumenPendukung extends Model
         parent::boot();
 
         static::deleting(function ($dokumen) {
-            if (Storage::exists($dokumen->path)) {
-                Storage::delete($dokumen->path);
+            if (Storage::disk('public')->exists($dokumen->path)) {
+                Storage::disk('public')->delete($dokumen->path);
             }
         });
     }

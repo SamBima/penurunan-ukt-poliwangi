@@ -643,7 +643,7 @@ class PengajuanController extends Controller
         $user = Auth::user();
         $role = $user->role;
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'hasilValidasi.validator']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'hasilValidasi.validator', 'dokumenPendukung']);
 
         // Filter by admin's jurusan_id
         if ($role === 'admin' && $user->jurusan_id) {
@@ -652,17 +652,21 @@ class PengajuanController extends Controller
             });
         }
 
-        // Tentukan status yang bisa dilihat berdasarkan role
+        // Tentukan status yang bisa dilihat berdasarkan role di List Pengajuan
         $allowedStatuses = [];
-        if ($role === 'keuangan') {
-            $allowedStatuses = ['diajukan', 'dinilai_admin'];
-        } elseif ($role === 'admin') {
+        if ($role === 'admin') {
+            // Admin Jurusan: Hanya tampilkan pengajuan yang butuh penilaian admin (diterima_keuangan)
+            // Data yang sudah dinilai (dinilai_admin, dst) berada di halaman Arsip
             $allowedStatuses = ['diterima_keuangan'];
+        } elseif ($role === 'keuangan') {
+            $allowedStatuses = ['diajukan', 'dinilai_admin'];
         } elseif ($role === 'wadir') {
             $allowedStatuses = ['dinilai_keuangan'];
+        } else {
+            $allowedStatuses = ['diajukan', 'diterima_keuangan', 'dinilai_admin', 'dinilai_keuangan'];
         }
 
-        // Filter berdasarkan role - hanya tampilkan yang perlu ditindaklanjuti
+        // Filter berdasarkan role - tampilkan data pengajuan aktif
         if (!empty($allowedStatuses)) {
             if ($request->filled('status') && in_array($request->status, $allowedStatuses)) {
                 $query->where('status', $request->status);
@@ -749,8 +753,8 @@ class PengajuanController extends Controller
             // Untuk Admin (Kajur): data yang sudah divalidasi oleh admin (dinilai_admin, dinilai_keuangan, dinilai_wadir, ditolak)
             $arsipStatuses = ['dinilai_admin', 'dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
         } elseif ($role === 'keuangan') {
-            // Untuk Keuangan: data yang sudah divalidasi akhir oleh keuangan tapi belum diputuskan oleh wadir
-            $arsipStatuses = ['dinilai_keuangan'];
+            // Untuk Keuangan: data yang sudah dinilai oleh keuangan (dinilai_keuangan, dinilai_wadir, ditolak)
+            $arsipStatuses = ['dinilai_keuangan', 'dinilai_wadir', 'ditolak'];
         } else {
             // Default / Wadir
             $arsipStatuses = ['dinilai_wadir', 'ditolak'];
@@ -847,55 +851,132 @@ class PengajuanController extends Controller
         try {
             DB::beginTransaction();
 
+            $allDataset = \App\Models\PengajuanPenurunanUkt::all();
+
+            $minGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->where(fn($v) => $v > 0)->min() ?? 500000;
+            $maxGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->max() ?? 5000000;
+
+            $minTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->where(fn($v) => $v > 0)->min() ?? 1;
+            $maxTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->max() ?? 7;
+
+            $minDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->where(fn($v) => $v > 0)->min() ?? 450;
+            $maxDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->max() ?? 2200;
+
+            $minListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->where(fn($v) => $v > 0)->min() ?? 20000;
+            $maxListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->max() ?? 2000000;
+
+            $minPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->where(fn($v) => $v > 0)->min() ?? 20000;
+            $maxPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->max() ?? 1000000;
+
+            $minPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->where(fn($v) => $v > 0)->min() ?? 20000;
+            $maxPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->max() ?? 1000000;
+
+            $minMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->where(fn($v) => $v > 0)->min() ?? 1;
+            $maxMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->max() ?? 5;
+
+            $minMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->where(fn($v) => $v > 0)->min() ?? 1;
+            $maxMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->max() ?? 3;
+
+            $allRumah      = \Illuminate\Support\Facades\DB::table('point_pengajuan')->pluck('poin_kondisi_rumah');
+            $minRumah      = $allRumah->where(fn($v) => $v > 0)->min() ?? 10;
+            $maxRumah      = $allRumah->max() ?? 80;
+
+            $allKartu      = $allDataset->map(fn($p) => abs($p->poin_kepemilikan_kartu));
+            $minKartu      = $allKartu->where(fn($v) => $v > 0)->min() ?? 5;
+            $maxKartu      = $allKartu->max() ?? 15;
+
             $count = 0;
             foreach ($pengajuans as $pengajuan) {
                 if ($action === 'terima') {
                     // 1. Calculate SAW score
                     $poinRumahSAW = 0; // bulk default
                     $sawCriteria = [
-                        ['label'=>'Penghasilan Orang Tua', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Tanggungan',     'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
-                        ['label'=>'Daya Listrik',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
-                        ['label'=>'Tagihan Listrik',        'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
-                        ['label'=>'Tagihan PDAM',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                        ['label'=>'PBB',                   'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Motor',           'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
-                        ['label'=>'Jumlah Mobil',           'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
-                        ['label'=>'Kondisi Rumah',          'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
-                        ['label'=>'Kepemilikan Kartu',      'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Penghasilan Orang Tua', 'nilai'=>(float)$pengajuan->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Tanggungan',     'nilai'=>(int)$pengajuan->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                        ['label'=>'Daya Listrik',           'nilai'=>(int)$pengajuan->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan Listrik',        'nilai'=>(float)$pengajuan->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Tagihan PDAM',           'nilai'=>(float)$pengajuan->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'PBB',                   'nilai'=>(float)$pengajuan->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Motor',           'nilai'=>(int)$pengajuan->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Jumlah Mobil',           'nilai'=>(int)$pengajuan->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Kondisi Rumah',          'nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost'],
+                        ['label'=>'Kepemilikan Kartu',      'nilai'=>(int)abs($pengajuan->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit'],
                     ];
 
                     $sawScore = 0;
                     foreach ($sawCriteria as $c) {
-                        if (isset($c['min']) && $c['min'] < 0) {
-                            $norm = ($c['max'] - $c['nilai']) / ($c['max'] - $c['min']);
-                        } elseif ($c['tipe'] === 'cost') {
-                            if ($c['max'] == 0) continue;
-                            $norm = ($c['max'] - $c['nilai']) / $c['max'];
+                        $cMin = $c['min'] ?? 0;
+                        $cMax = $c['max'] ?? 1;
+                        $xij  = $c['nilai'];
+
+                        if (strtolower($c['tipe']) === 'benefit') {
+                            // Rumus Benefit: Rij = Xij / max(Xj)
+                            $norm = ($cMax > 0 && $xij > 0) ? $xij / $cMax : 0;
                         } else {
-                            if ($c['max'] == 0) continue;
-                            $norm = $c['nilai'] / $c['max'];
+                            // Rumus Cost: Rij = min(Xj) / Xij
+                            // ATURAN KHUSUS: Jika nilai asli Xij = 0, maka Rij = 0
+                            if ($xij == 0) {
+                                $norm = 0.0;
+                            } else {
+                                $norm = $cMin / $xij;
+                            }
                         }
                         $sawScore += $norm * $c['bobot'];
                     }
 
-                    // Determine recommendation based on SAW score
+                    $uktAwalBulk = (int) ($pengajuan->mahasiswa->ukt_awal ?? 0);
+
                     if ($sawScore >= 0.70) {
-                        $status = 'disetujui';
-                        $berlakuSelama = 'Sampai Lulus';
-                        $uktBaru = 500000;
+                        $targetUkt = 500000;
+                        if ($uktAwalBulk > 0 && $targetUkt >= $uktAwalBulk) {
+                            $status = 'disarankan_cicilan';
+                            $berlakuSelama = '1 Semester';
+                            $uktBaru = $uktAwalBulk;
+                        } else {
+                            $status = 'disetujui';
+                            $berlakuSelama = 'Sampai Lulus';
+                            $uktBaru = $targetUkt;
+                        }
                     } elseif ($sawScore >= 0.50) {
-                        $status = 'disetujui';
-                        $berlakuSelama = '2 Semester';
-                        $uktBaru = 2000000;
+                        $targetUkt = 2000000;
+                        if ($uktAwalBulk > 0 && $targetUkt >= $uktAwalBulk) {
+                            $lowerTiers = array_filter([1000000, 500000], fn($t) => $t < $uktAwalBulk);
+                            if (!empty($lowerTiers)) {
+                                $status = 'disetujui';
+                                $berlakuSelama = '2 Semester';
+                                $uktBaru = max($lowerTiers);
+                            } else {
+                                $status = 'disarankan_cicilan';
+                                $berlakuSelama = '1 Semester';
+                                $uktBaru = $uktAwalBulk;
+                            }
+                        } else {
+                            $status = 'disetujui';
+                            $berlakuSelama = '2 Semester';
+                            $uktBaru = $targetUkt;
+                        }
                     } elseif ($sawScore >= 0.30) {
-                        $status = 'disetujui';
-                        $berlakuSelama = '1 Semester';
-                        $uktBaru = 3000000;
+                        $targetUkt = 3000000;
+                        if ($uktAwalBulk > 0 && $targetUkt >= $uktAwalBulk) {
+                            $lowerTiers = array_filter([2000000, 1000000, 500000], fn($t) => $t < $uktAwalBulk);
+                            if (!empty($lowerTiers)) {
+                                $status = 'disetujui';
+                                $berlakuSelama = '1 Semester';
+                                $uktBaru = max($lowerTiers);
+                            } else {
+                                $status = 'disarankan_cicilan';
+                                $berlakuSelama = '1 Semester';
+                                $uktBaru = $uktAwalBulk;
+                            }
+                        } else {
+                            $status = 'disetujui';
+                            $berlakuSelama = '1 Semester';
+                            $uktBaru = $targetUkt;
+                        }
                     } else {
                         $status = 'disarankan_cicilan';
                         $berlakuSelama = '1 Semester';
-                        $uktBaru = (int) $pengajuan->mahasiswa->ukt_awal;
+                        $uktBaru = $uktAwalBulk;
                     }
 
                     // Create/update PointPengajuan
@@ -978,7 +1059,8 @@ class PengajuanController extends Controller
                 }
 
                 // Update status pengajuan
-                $pengajuan->update(['status' => 'dinilai_keuangan']);
+                $newStatus = ($pengajuan->status === 'diajukan' && $action === 'terima') ? 'diterima_keuangan' : ($action === 'terima' ? 'dinilai_keuangan' : 'ditolak');
+                $pengajuan->update(['status' => $newStatus]);
                 $count++;
             }
 
@@ -996,11 +1078,114 @@ class PengajuanController extends Controller
         }
     }
 
+    private function calculateSawScoresAndRanks($query, $sortOption = 'saw_desc')
+    {
+        $allDataset = PengajuanPenurunanUkt::all();
+
+        $minGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->where(fn($v) => $v > 0)->min() ?? 500000;
+        $maxGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->max() ?? 5000000;
+
+        $minTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->where(fn($v) => $v > 0)->min() ?? 1;
+        $maxTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->max() ?? 7;
+
+        $minDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->where(fn($v) => $v > 0)->min() ?? 450;
+        $maxDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->max() ?? 2200;
+
+        $minListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->where(fn($v) => $v > 0)->min() ?? 20000;
+        $maxListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->max() ?? 2000000;
+
+        $minPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->where(fn($v) => $v > 0)->min() ?? 20000;
+        $maxPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->max() ?? 1000000;
+
+        $minPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->where(fn($v) => $v > 0)->min() ?? 20000;
+        $maxPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->max() ?? 1000000;
+
+        $minMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->where(fn($v) => $v > 0)->min() ?? 1;
+        $maxMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->max() ?? 5;
+
+        $minMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->where(fn($v) => $v > 0)->min() ?? 1;
+        $maxMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->max() ?? 3;
+
+        $allRumah      = DB::table('point_pengajuan')->pluck('poin_kondisi_rumah');
+        $minRumah      = $allRumah->where(fn($v) => $v > 0)->min() ?? 10;
+        $maxRumah      = $allRumah->max() ?? 80;
+
+        $allKartu      = $allDataset->map(fn($p) => abs($p->poin_kepemilikan_kartu));
+        $minKartu      = $allKartu->where(fn($v) => $v > 0)->min() ?? 5;
+        $maxKartu      = $allKartu->max() ?? 15;
+
+        $allResults = $query->get();
+
+        foreach ($allResults as $item) {
+            $poinKeuangan = $item->pointPengajuan->where('role', 'keuangan')->first();
+            $poinRumahSAW = $poinKeuangan->poin_kondisi_rumah ?? 0;
+
+            $sawCriteria = [
+                ['nilai'=>(float)$item->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                ['nilai'=>(int)$item->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(float)$item->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(int)$item->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost'],
+                ['nilai'=>(int)abs($item->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit'],
+            ];
+
+            $sawScore = 0;
+            foreach ($sawCriteria as $c) {
+                $cMin = $c['min'];
+                $cMax = $c['max'];
+                $xij  = $c['nilai'];
+
+                if (strtolower($c['tipe']) === 'benefit') {
+                    $norm = ($cMax > 0 && $xij > 0) ? ($xij / $cMax) : 0;
+                } else {
+                    if ($xij == 0) {
+                        $norm = 0.0;
+                    } else {
+                        $norm = ($cMin / $xij);
+                    }
+                }
+                $sawScore += ($norm * $c['bobot']);
+            }
+            $item->saw_score = round($sawScore, 4);
+        }
+
+        // Rangking berdasarkan skor SAW tertinggi
+        $rankSorted = $allResults->sort(function($a, $b) {
+            if ($b->saw_score == $a->saw_score) {
+                return $b->id <=> $a->id;
+            }
+            return ($b->saw_score > $a->saw_score) ? 1 : -1;
+        })->values();
+
+        $rankCounter = 1;
+        foreach ($rankSorted as $rItem) {
+            $rItem->saw_rank = $rankCounter++;
+        }
+
+        if ($sortOption === 'saw_asc') {
+            return $allResults->sort(function($a, $b) {
+                if ($a->saw_score == $b->saw_score) {
+                    return $a->id <=> $b->id;
+                }
+                return ($a->saw_score > $b->saw_score) ? 1 : -1;
+            })->values();
+        } elseif ($sortOption === 'latest') {
+            return $allResults->sortByDesc('created_at')->values();
+        } else {
+            // Default: Perangkingan SAW (Skor Tertinggi)
+            return $rankSorted;
+        }
+    }
+
     public function hasilAkhir(Request $request)
     {
         $user = Auth::user();
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'pointPengajuan', 'hasilValidasi']);
 
         // Tampilkan hanya data yang sudah dinilai oleh wadir (dinilai_wadir, ditolak)
         $hasilStatuses = ['dinilai_wadir', 'ditolak'];
@@ -1038,9 +1223,18 @@ class PengajuanController extends Controller
             });
         }
 
-        $query->orderBy('created_at', 'desc');
-        $pengajuan = $query->paginate(10);
-        $pengajuan->appends($request->query());
+        $sortOption = $request->query('sort', 'saw_desc');
+        $allResults = $this->calculateSawScoresAndRanks($query, $sortOption);
+
+        $page = (int) $request->input('page', 1);
+        $perPage = 10;
+        $pengajuan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allResults->forPage($page, $perPage)->values(),
+            $allResults->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $firstPengajuan = PengajuanPenurunanUkt::orderBy('created_at', 'asc')->first();
         $startYear = $firstPengajuan ? $firstPengajuan->created_at->year : now()->year;
@@ -1074,7 +1268,7 @@ class PengajuanController extends Controller
     {
         $user = Auth::user();
         
-        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'hasilValidasi']);
+        $query = PengajuanPenurunanUkt::with(['mahasiswa.prodi', 'hasilValidasi', 'pointPengajuan']);
 
         $hasilStatuses = ['dinilai_wadir', 'ditolak'];
         
@@ -1111,10 +1305,8 @@ class PengajuanController extends Controller
             });
         }
 
-        $query->orderBy('created_at', 'desc');
-        
-        // Ambil semua data tanpa pagination agar masuk semua ke PDF cetak
-        $pengajuan = $query->get();
+        $sortOption = $request->query('sort', 'saw_desc');
+        $pengajuan = $this->calculateSawScoresAndRanks($query, $sortOption);
 
         return view('dashboard.cetak_hasil_akhir', compact('pengajuan'));
     }

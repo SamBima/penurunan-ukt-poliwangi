@@ -4,7 +4,10 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Pengajuan Penurunan UKT</h1>
-        <a href="{{ route('list-pengajuan') }}" class="btn btn-secondary">
+        @php
+            $backUrl = (request('source') === 'arsip') ? route('arsip-pengajuan') : route('list-pengajuan');
+        @endphp
+        <a href="{{ $backUrl }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
@@ -305,29 +308,70 @@
                     @if($validasi->validator && $validasi->validator->role === 'keuangan')
                         @php
                             $poinRumahSAW = $poinKeuangan->poin_kondisi_rumah ?? 0;
+                            
+                            $allDataset = \App\Models\PengajuanPenurunanUkt::all();
+
+                            $minGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->where(fn($v) => $v > 0)->min() ?? 500000;
+                            $maxGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->max() ?? 5000000;
+
+                            $minTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->where(fn($v) => $v > 0)->min() ?? 1;
+                            $maxTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->max() ?? 7;
+
+                            $minDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->where(fn($v) => $v > 0)->min() ?? 450;
+                            $maxDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->max() ?? 2200;
+
+                            $minListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->where(fn($v) => $v > 0)->min() ?? 20000;
+                            $maxListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->max() ?? 2000000;
+
+                            $minPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->where(fn($v) => $v > 0)->min() ?? 20000;
+                            $maxPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->max() ?? 1000000;
+
+                            $minPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->where(fn($v) => $v > 0)->min() ?? 20000;
+                            $maxPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->max() ?? 1000000;
+
+                            $minMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->where(fn($v) => $v > 0)->min() ?? 1;
+                            $maxMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->max() ?? 5;
+
+                            $minMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->where(fn($v) => $v > 0)->min() ?? 1;
+                            $maxMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->max() ?? 3;
+
+                            $allRumah      = \Illuminate\Support\Facades\DB::table('point_pengajuan')->pluck('poin_kondisi_rumah');
+                            $minRumah      = $allRumah->where(fn($v) => $v > 0)->min() ?? 10;
+                            $maxRumah      = $allRumah->max() ?? 80;
+
+                            $allKartu      = $allDataset->map(fn($p) => abs($p->poin_kepemilikan_kartu));
+                            $minKartu      = $allKartu->where(fn($v) => $v > 0)->min() ?? 5;
+                            $maxKartu      = $allKartu->max() ?? 15;
+
                             $sawCriteria = [
-                                ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>$pengajuan->poin_total_gaji,             'max'=>80,  'bobot'=>0.25, 'tipe'=>'cost'],
-                                ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>$pengajuan->poin_jumlah_tanggungan,       'max'=>80,  'bobot'=>0.15, 'tipe'=>'cost'],
-                                ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>$pengajuan->poin_daya_listrik,            'max'=>40,  'bobot'=>0.08, 'tipe'=>'cost'],
-                                ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>$pengajuan->poin_tagihan_listrik,         'max'=>90,  'bobot'=>0.08, 'tipe'=>'cost'],
-                                ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>$pengajuan->poin_tagihan_pdam,            'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                                ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>$pengajuan->poin_pbb,                    'max'=>100, 'bobot'=>0.05, 'tipe'=>'cost'],
-                                ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>$pengajuan->poin_jumlah_motor,            'max'=>45,  'bobot'=>0.07, 'tipe'=>'cost'],
-                                ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>$pengajuan->poin_jumlah_mobil,            'max'=>80,  'bobot'=>0.07, 'tipe'=>'cost'],
-                                ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>$poinRumahSAW,                           'max'=>100, 'bobot'=>0.10, 'tipe'=>'benefit'],
-                                ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>$pengajuan->poin_kepemilikan_kartu,       'min'=>-15, 'max'=>0,  'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>(float)$pengajuan->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>(int)$pengajuan->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit'],
+                                ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>(int)$pengajuan->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>(float)$pengajuan->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>(float)$pengajuan->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>(float)$pengajuan->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>(int)$pengajuan->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>(int)$pengajuan->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost'],
+                                ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>(int)abs($pengajuan->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit'],
                             ];
 
                             $sawScore = 0;
                             foreach ($sawCriteria as $c) {
-                                if (isset($c['min']) && $c['min'] < 0) {
-                                    $norm = round(($c['max'] - $c['nilai']) / ($c['max'] - $c['min']), 4);
+                                $cMin = $c['min'];
+                                $cMax = $c['max'];
+                                $xij  = $c['nilai'];
+
+                                if (strtolower($c['tipe']) === 'benefit') {
+                                    // Rumus Benefit: Rij = Xij / max(Xj)
+                                    $norm = ($cMax > 0 && $xij > 0) ? round($xij / $cMax, 4) : 0;
                                 } else {
-                                    if ($c['max'] == 0) continue;
-                                    if ($c['tipe'] === 'cost') {
-                                        $norm = round(($c['max'] - $c['nilai']) / $c['max'], 4);
+                                    // Rumus Cost: Rij = min(Xj) / Xij
+                                    // ATURAN KHUSUS: Jika nilai asli Xij = 0, maka Rij = 0
+                                    if ($xij == 0) {
+                                        $norm = 0.0;
                                     } else {
-                                        $norm = round($c['nilai'] / $c['max'], 4);
+                                        $norm = round($cMin / $xij, 4);
                                     }
                                 }
                                 $sawScore += round($norm * $c['bobot'], 4);
@@ -335,24 +379,73 @@
                             $sawScore = round($sawScore, 4);
                             $sawPersen = round($sawScore * 100, 1);
 
+                            $uktAwal = (int) ($pengajuan->mahasiswa->ukt_awal ?? 0);
+
                             if ($sawScore >= 0.70) {
-                                $sawLabel = 'Sangat Layak';
-                                $sawBadge = 'success';
-                                $sawIcon = 'fa-check-circle';
-                                $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
-                                $sawRecTariff = 'Rp 500.000';
+                                $rawTariff = 500000;
+                                if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                                    $sawLabel = 'Tidak Layak';
+                                    $sawBadge = 'danger';
+                                    $sawIcon = 'fa-times-circle';
+                                    $sawRecStatus = 'UKT Tetap / diangsur';
+                                    $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                                } else {
+                                    $sawLabel = 'Sangat Layak';
+                                    $sawBadge = 'success';
+                                    $sawIcon = 'fa-check-circle';
+                                    $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
+                                    $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                                }
                             } elseif ($sawScore >= 0.50) {
-                                $sawLabel = 'Layak';
-                                $sawBadge = 'primary';
-                                $sawIcon = 'fa-thumbs-up';
-                                $sawRecStatus = 'Disetujui Penurunan 2 Semester';
-                                $sawRecTariff = 'Rp 2.000.000';
+                                $rawTariff = 2000000;
+                                if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                                    $lowerTiers = array_filter([1000000, 500000], fn($t) => $t < $uktAwal);
+                                    if (!empty($lowerTiers)) {
+                                        $rawTariff = max($lowerTiers);
+                                        $sawLabel = 'Layak';
+                                        $sawBadge = 'primary';
+                                        $sawIcon = 'fa-thumbs-up';
+                                        $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                                        $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                                    } else {
+                                        $sawLabel = 'Tidak Layak';
+                                        $sawBadge = 'danger';
+                                        $sawIcon = 'fa-times-circle';
+                                        $sawRecStatus = 'UKT Tetap / diangsur';
+                                        $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                                    }
+                                } else {
+                                    $sawLabel = 'Layak';
+                                    $sawBadge = 'primary';
+                                    $sawIcon = 'fa-thumbs-up';
+                                    $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                                    $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                                }
                             } elseif ($sawScore >= 0.30) {
-                                $sawLabel = 'Kurang Layak';
-                                $sawBadge = 'warning';
-                                $sawIcon = 'fa-exclamation-circle';
-                                $sawRecStatus = 'Disetujui Penurunan 1 Semester';
-                                $sawRecTariff = 'Rp 3.000.000';
+                                $rawTariff = 3000000;
+                                if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                                    $lowerTiers = array_filter([2000000, 1000000, 500000], fn($t) => $t < $uktAwal);
+                                    if (!empty($lowerTiers)) {
+                                        $rawTariff = max($lowerTiers);
+                                        $sawLabel = 'Kurang Layak';
+                                        $sawBadge = 'warning';
+                                        $sawIcon = 'fa-exclamation-circle';
+                                        $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                                        $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                                    } else {
+                                        $sawLabel = 'Tidak Layak';
+                                        $sawBadge = 'danger';
+                                        $sawIcon = 'fa-times-circle';
+                                        $sawRecStatus = 'UKT Tetap / diangsur';
+                                        $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                                    }
+                                } else {
+                                    $sawLabel = 'Kurang Layak';
+                                    $sawBadge = 'warning';
+                                    $sawIcon = 'fa-exclamation-circle';
+                                    $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                                    $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                                }
                             } else {
                                 $sawLabel = 'Tidak Layak';
                                 $sawBadge = 'danger';

@@ -4,8 +4,11 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detail Arsip Pengajuan</h1>
-        <a href="{{ route('arsip-pengajuan') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali ke Arsip
+        @php
+            $backUrl = (request('source') === 'arsip') ? route('arsip-pengajuan') : route('list-pengajuan');
+        @endphp
+        <a href="{{ $backUrl }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
 
@@ -242,6 +245,236 @@
                             <i class="fas fa-times-circle"></i> Pengajuan ini telah <strong>DITOLAK</strong>.
                         </div>
                     @endif
+                </div>
+            </div>
+
+            {{-- ===== CARD HASIL SAW DI DETAIL ARSIP ===== --}}
+            @php
+                $poinKeuanganArsip = $pengajuan->pointPengajuan->where('role', 'keuangan')->first();
+                $poinRumahSAW = $poinKeuanganArsip->poin_kondisi_rumah ?? 0;
+                
+                $allDataset = \App\Models\PengajuanPenurunanUkt::all();
+
+                $minGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->where(fn($v) => $v > 0)->min() ?? 500000;
+                $maxGaji       = $allDataset->map(fn($p) => (float) $p->total_gaji)->max() ?? 5000000;
+
+                $minTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->where(fn($v) => $v > 0)->min() ?? 1;
+                $maxTanggungan = $allDataset->map(fn($p) => (int) $p->jumlah_tanggungan)->max() ?? 7;
+
+                $minDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->where(fn($v) => $v > 0)->min() ?? 450;
+                $maxDaya       = $allDataset->map(fn($p) => (int) $p->daya_listrik)->max() ?? 2200;
+
+                $minListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->where(fn($v) => $v > 0)->min() ?? 20000;
+                $maxListrik    = $allDataset->map(fn($p) => (float) $p->tagihan_listrik)->max() ?? 2000000;
+
+                $minPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->where(fn($v) => $v > 0)->min() ?? 20000;
+                $maxPdam       = $allDataset->map(fn($p) => (float) $p->tagihan_pdam)->max() ?? 1000000;
+
+                $minPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->where(fn($v) => $v > 0)->min() ?? 20000;
+                $maxPbb        = $allDataset->map(fn($p) => (float) $p->pbb)->max() ?? 1000000;
+
+                $minMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->where(fn($v) => $v > 0)->min() ?? 1;
+                $maxMotor      = $allDataset->map(fn($p) => (int) $p->jumlah_motor)->max() ?? 5;
+
+                $minMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->where(fn($v) => $v > 0)->min() ?? 1;
+                $maxMobil      = $allDataset->map(fn($p) => (int) $p->jumlah_mobil)->max() ?? 3;
+
+                $allRumah      = \Illuminate\Support\Facades\DB::table('point_pengajuan')->pluck('poin_kondisi_rumah');
+                $minRumah      = $allRumah->where(fn($v) => $v > 0)->min() ?? 10;
+                $maxRumah      = $allRumah->max() ?? 80;
+
+                $allKartu      = $allDataset->map(fn($p) => abs($p->poin_kepemilikan_kartu));
+                $minKartu      = $allKartu->where(fn($v) => $v > 0)->min() ?? 5;
+                $maxKartu      = $allKartu->max() ?? 15;
+
+                $sawCriteria = [
+                    ['label'=>'Penghasilan Orang Tua', 'icon'=>'fa-money-bill-wave', 'nilai'=>(float)$pengajuan->total_gaji,          'min'=>$minGaji,       'max'=>$maxGaji,       'bobot'=>0.10, 'tipe'=>'cost',   'display'=>'Rp ' . number_format($pengajuan->total_gaji, 0, ',', '.')],
+                    ['label'=>'Jumlah Tanggungan',     'icon'=>'fa-users',          'nilai'=>(int)$pengajuan->jumlah_tanggungan,     'min'=>$minTanggungan, 'max'=>$maxTanggungan, 'bobot'=>0.10, 'tipe'=>'benefit', 'display'=>$pengajuan->jumlah_tanggungan . ' Orang'],
+                    ['label'=>'Daya Listrik',           'icon'=>'fa-bolt',           'nilai'=>(int)$pengajuan->daya_listrik,          'min'=>$minDaya,       'max'=>$maxDaya,       'bobot'=>0.10, 'tipe'=>'cost',   'display'=>$pengajuan->daya_listrik . ' VA'],
+                    ['label'=>'Tagihan Listrik',        'icon'=>'fa-file-invoice',   'nilai'=>(float)$pengajuan->tagihan_listrik,     'min'=>$minListrik,    'max'=>$maxListrik,    'bobot'=>0.10, 'tipe'=>'cost',   'display'=>'Rp ' . number_format($pengajuan->tagihan_listrik, 0, ',', '.')],
+                    ['label'=>'Tagihan PDAM',           'icon'=>'fa-tint',           'nilai'=>(float)$pengajuan->tagihan_pdam,        'min'=>$minPdam,       'max'=>$maxPdam,       'bobot'=>0.10, 'tipe'=>'cost',   'display'=>'Rp ' . number_format($pengajuan->tagihan_pdam, 0, ',', '.')],
+                    ['label'=>'PBB',                   'icon'=>'fa-home',           'nilai'=>(float)$pengajuan->pbb,                 'min'=>$minPbb,        'max'=>$maxPbb,        'bobot'=>0.10, 'tipe'=>'cost',   'display'=>'Rp ' . number_format($pengajuan->pbb, 0, ',', '.')],
+                    ['label'=>'Jumlah Motor',           'icon'=>'fa-motorcycle',     'nilai'=>(int)$pengajuan->jumlah_motor,          'min'=>$minMotor,      'max'=>$maxMotor,      'bobot'=>0.10, 'tipe'=>'cost',   'display'=>$pengajuan->jumlah_motor . ' Unit'],
+                    ['label'=>'Jumlah Mobil',           'icon'=>'fa-car',            'nilai'=>(int)$pengajuan->jumlah_mobil,          'min'=>$minMobil,      'max'=>$maxMobil,      'bobot'=>0.10, 'tipe'=>'cost',   'display'=>$pengajuan->jumlah_mobil . ' Unit'],
+                    ['label'=>'Kondisi Rumah',          'icon'=>'fa-house-damage',   'nilai'=>(int)$poinRumahSAW,                     'min'=>$minRumah,      'max'=>$maxRumah,      'bobot'=>0.10, 'tipe'=>'cost',   'display'=>$poinRumahSAW . ' Poin'],
+                    ['label'=>'Kepemilikan Kartu',      'icon'=>'fa-id-card',        'nilai'=>(int)abs($pengajuan->poin_kepemilikan_kartu), 'min'=>$minKartu, 'max'=>$maxKartu,      'bobot'=>0.10, 'tipe'=>'benefit', 'display'=>$pengajuan->kepemilikan_kartu],
+                ];
+
+                $sawScore = 0;
+                foreach ($sawCriteria as &$c) {
+                    $cMin = $c['min'];
+                    $cMax = $c['max'];
+                    $xij  = $c['nilai'];
+
+                    if (strtolower($c['tipe']) === 'benefit') {
+                        $c['normalized'] = ($cMax > 0 && $xij > 0) ? round($xij / $cMax, 4) : 0;
+                    } else {
+                        // ATURAN KHUSUS: Jika nilai asli Xij = 0, maka Rij = 0
+                        if ($xij == 0) {
+                            $c['normalized'] = 0.0;
+                        } else {
+                            $c['normalized'] = round($cMin / $xij, 4);
+                        }
+                    }
+
+                    $c['weighted'] = round($c['normalized'] * $c['bobot'], 4);
+                    $sawScore += $c['weighted'];
+                }
+                unset($c);
+                $sawScore = round($sawScore, 4);
+                $sawPersen = round($sawScore * 100, 1);
+
+                $uktAwal = (int) ($pengajuan->mahasiswa->ukt_awal ?? 0);
+
+                if ($sawScore >= 0.70) {
+                    $rawTariff = 500000;
+                    if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                        $sawLabel = 'Tidak Layak';
+                        $sawBadge = 'danger';
+                        $sawIcon = 'fa-times-circle';
+                        $sawRecStatus = 'UKT Tetap / diangsur';
+                        $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                    } else {
+                        $sawLabel = 'Sangat Layak';
+                        $sawBadge = 'success';
+                        $sawIcon = 'fa-check-circle';
+                        $sawRecStatus = 'Disetujui Penurunan Sampai Lulus';
+                        $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                    }
+                } elseif ($sawScore >= 0.50) {
+                    $rawTariff = 2000000;
+                    if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                        $lowerTiers = array_filter([1000000, 500000], fn($t) => $t < $uktAwal);
+                        if (!empty($lowerTiers)) {
+                            $rawTariff = max($lowerTiers);
+                            $sawLabel = 'Layak';
+                            $sawBadge = 'primary';
+                            $sawIcon = 'fa-thumbs-up';
+                            $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                            $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                        } else {
+                            $sawLabel = 'Tidak Layak';
+                            $sawBadge = 'danger';
+                            $sawIcon = 'fa-times-circle';
+                            $sawRecStatus = 'UKT Tetap / diangsur';
+                            $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                        }
+                    } else {
+                        $sawLabel = 'Layak';
+                        $sawBadge = 'primary';
+                        $sawIcon = 'fa-thumbs-up';
+                        $sawRecStatus = 'Disetujui Penurunan 2 Semester';
+                        $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                    }
+                } elseif ($sawScore >= 0.30) {
+                    $rawTariff = 3000000;
+                    if ($uktAwal > 0 && $rawTariff >= $uktAwal) {
+                        $lowerTiers = array_filter([2000000, 1000000, 500000], fn($t) => $t < $uktAwal);
+                        if (!empty($lowerTiers)) {
+                            $rawTariff = max($lowerTiers);
+                            $sawLabel = 'Kurang Layak';
+                            $sawBadge = 'warning';
+                            $sawIcon = 'fa-exclamation-circle';
+                            $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                            $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                        } else {
+                            $sawLabel = 'Tidak Layak';
+                            $sawBadge = 'danger';
+                            $sawIcon = 'fa-times-circle';
+                            $sawRecStatus = 'UKT Tetap / diangsur';
+                            $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                        }
+                    } else {
+                        $sawLabel = 'Kurang Layak';
+                        $sawBadge = 'warning';
+                        $sawIcon = 'fa-exclamation-circle';
+                        $sawRecStatus = 'Disetujui Penurunan 1 Semester';
+                        $sawRecTariff = 'Rp ' . number_format($rawTariff, 0, ',', '.');
+                    }
+                } else {
+                    $sawLabel = 'Tidak Layak';
+                    $sawBadge = 'danger';
+                    $sawIcon = 'fa-times-circle';
+                    $sawRecStatus = 'UKT Tetap / diangsur';
+                    $sawRecTariff = 'UKT Tetap (Tidak Ada Penurunan)';
+                }
+            @endphp
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calculator"></i> Hasil Perhitungan SAW
+                        <small class="text-muted font-weight-normal">(Simple Additive Weighting)</small>
+                    </h6>
+                    <span class="badge badge-{{ $sawBadge }} px-3 py-2">
+                        <i class="fas {{ $sawIcon }}"></i> {{ $sawLabel }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h3 class="font-weight-bold text-{{ $sawBadge }}">{{ $sawPersen }}%</h3>
+                        <div class="progress" style="height: 18px; border-radius: 9px;">
+                            <div class="progress-bar bg-{{ $sawBadge }} progress-bar-striped"
+                                 role="progressbar"
+                                 style="width: {{ $sawPersen }}%;"
+                                 aria-valuenow="{{ $sawPersen }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ $sawPersen }}%
+                            </div>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Skor akhir SAW: <strong>{{ number_format($sawScore, 4) }}</strong> / 1.00</small>
+                    </div>
+
+                    <hr>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered small">
+                            <thead class="thead-light">
+                                <tr class="text-center">
+                                    <th>Kriteria</th>
+                                    <th>Nilai (X<sub>ij</sub>)</th>
+                                    <th>Bobot (W<sub>j</sub>)</th>
+                                    <th>Hasil Normalisasi (R<sub>ij</sub>)</th>
+                                    <th>Nilai Terbobot (R<sub>ij</sub> &times; W<sub>j</sub>)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($sawCriteria as $c)
+                                <tr class="text-center">
+                                    <td class="text-left"><i class="fas {{ $c['icon'] }} text-muted mr-1"></i> {{ $c['label'] }}</td>
+                                    <td>{{ $c['display'] }}</td>
+                                    <td>{{ number_format($c['bobot'] * 100, 0) }}%</td>
+                                    <td>
+                                        <span class="badge badge-{{ $c['normalized'] >= 0.5 ? 'success' : ($c['normalized'] >= 0.25 ? 'warning' : 'danger') }}">
+                                            {{ number_format($c['normalized'], 4) }}
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ number_format($c['weighted'], 4) }}</strong></td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="table-info">
+                                <tr class="text-center font-weight-bold">
+                                    <td colspan="4" class="text-right">Nilai Akhir Preferensi SAW (V<sub>i</sub>)</td>
+                                    <td>{{ number_format($sawScore, 4) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info mt-3 border-left-info shadow-sm">
+                        <h6 class="font-weight-bold text-info"><i class="fas fa-magic"></i> Rekomendasi Hasil Perhitungan SAW:</h6>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Keputusan:</small>
+                                <span class="h6 font-weight-bold text-dark">{{ $sawRecStatus }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block font-weight-bold">Rekomendasi Tarif UKT Baru:</small>
+                                <span class="h6 font-weight-bold text-success">{{ $sawRecTariff }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

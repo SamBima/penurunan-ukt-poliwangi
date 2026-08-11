@@ -97,7 +97,7 @@
                                 <strong>{{ $pengajuan->created_at->format('d M Y, H:i') }}</strong>
                             </div>
                             <div class="col-md-4">
-                                <small class="text-muted d-block">UKT Saat Ini</small>
+                                <small class="text-muted d-block">UKT sebelum melakukan pengajuan</small>
                                 <strong class="text-danger">Rp {{ number_format($pengajuan->mahasiswa->ukt_awal ?? 0, 0, ',', '.') }}</strong>
                             </div>
                             <div class="col-md-4">
@@ -186,7 +186,7 @@
                                             </h6>
                                             <div class="row mt-3">
                                                 <div class="col-6">
-                                                    <small class="text-muted d-block">UKT Baru</small>
+                                                    <small class="text-muted d-block">UKT saat ini</small>
                                                     <strong class="text-success h5">Rp {{ number_format($hasilWadir->rekomendasi_ukt, 0, ',', '.') }}</strong>
                                                 </div>
                                                 <div class="col-6">
